@@ -595,7 +595,13 @@ document.addEventListener('click', function(e) {
   <div style="position:relative">
   <div class="city-pill" id="city-pill-btn" onclick="toggleCityDrop()">📍 <span id="cur-city">达拉斯</span> ▾</div>
   <div id="city-drop" style="display:none;position:absolute;top:calc(100% + 8px);left:0;background:#fff;border:1.5px solid var(--border2);border-radius:14px;padding:10px;box-shadow:0 8px 24px rgba(0,0,0,0.12);z-index:400;min-width:220px">
-
+    <div style="font-size:11px;font-weight:700;color:var(--ink3);letter-spacing:0.8px;padding:2px 6px 8px">选择城市</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">
+      <div class="city-drop-item active" onclick="chcity('达拉斯',this)">达拉斯</div>
+      <div class="city-drop-item" onclick="chcity('休斯顿',this)">休斯顿</div>
+      <div class="city-drop-item" onclick="chcity('圣安东尼奥',this)">圣安东尼奥</div>
+      <div class="city-drop-item" onclick="chcity('奥斯丁',this)">奥斯丁</div>
+    </div>
   </div>
 </div>
   <div class="search-wrap">
