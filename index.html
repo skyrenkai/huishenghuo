@@ -1161,33 +1161,30 @@ function sendVerifyCode() {
   if(!e.includes('@')) { errEl.textContent='请输入有效邮箱'; errEl.style.display='block'; return; }
   if(p.length < 8 || p.length > 20) { errEl.textContent='密码须为8-20位'; errEl.style.display='block'; return; }
   if(USERS.find(x=>x.email===e)) {
-    errEl.innerHTML='该邮箱已注册，<span style="color:var(--brand);cursor:pointer;font-weight:700;text-decoration:underline" onclick="close_('register-m');open_('login-m')">直接登录</span>';
+    errEl.innerHTML='该邮箱已注册，<a style="color:var(--brand);font-weight:700;cursor:pointer" onclick="goRegToLogin()">直接登录</a>';
     errEl.style.display='block'; return;
   }
   pendingRegData = {name:n, email:e, pwd:p};
   pendingVerifyCode = genCode();
-  // Show sending state
   const btn = document.querySelector('#register-m .submit-btn');
   btn.textContent = '发送中…'; btn.disabled = true;
   emailjs.send('service_o1q6qhn', 'template_3ive3pm', {
     to_email: e,
     to_name: n,
     code: pendingVerifyCode
-  }).then(() => {
+  }).then(function() {
     btn.textContent = '发送验证码'; btn.disabled = false;
     document.getElementById('reg-email-hint').textContent = '验证码已发送到 ' + e;
-    document.getElementById('demo-code-display').style.display = 'none';
     document.getElementById('vcode').value = '';
     document.getElementById('vcode-err').style.display = 'none';
     regStep = 2; showRegStep();
     toast_('📧 验证码已发送，请查收邮件', 'success');
-  }).catch(err => {
+  }).catch(function(err) {
     btn.textContent = '发送验证码'; btn.disabled = false;
     errEl.textContent = '发送失败，请稍后重试'; errEl.style.display = 'block';
-    console.error('EmailJS error:', err);
   });
 }
-
+function goRegToLogin(){close_('register-m');open_('login-m');}
 function resendCode() {
   if(!pendingRegData) return;
   pendingVerifyCode = genCode();
