@@ -488,6 +488,8 @@ body.admin-mode .sidebar-l,body.admin-mode .sidebar-r{top:calc(var(--admin-bar)+
   .sidebar-l { display: none !important; }
 }
 </style>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script>emailjs.init("gygV9w9ZpNfdubDn9");</script>
 </head>
 <body>
 
@@ -708,7 +710,7 @@ body.admin-mode .sidebar-l,body.admin-mode .sidebar-r{top:calc(var(--admin-bar)+
           <div style="font-size:13px;color:var(--ink3)" id="reg-email-hint">验证码已发送到你的邮箱</div>
         </div>
         <div style="background:#fef3c7;border-radius:12px;padding:12px 16px;font-size:13px;color:#92400e;margin-bottom:4px">
-          <strong>演示模式：</strong>验证码是 <strong id="demo-code-display" style="font-size:18px;letter-spacing:4px;font-family:monospace"></strong>
+          <strong>演示模式：</strong>验证码是 <strong id="demo-code-display" style="display:none" style="font-size:18px;letter-spacing:4px;font-family:monospace"></strong>
         </div>
         <div class="fg" style="margin-top:8px">
           <div class="flabel">输入6位验证码</div>
@@ -1169,24 +1171,46 @@ function sendVerifyCode() {
   if(!e.includes('@')) { errEl.textContent='请输入有效邮箱'; errEl.style.display='block'; return; }
   if(p.length < 8 || p.length > 20) { errEl.textContent='密码须为8-20位'; errEl.style.display='block'; return; }
   if(USERS.find(x=>x.email===e)) {
-    errEl.innerHTML='该邮箱已注册，<span style="color:var(--brand);cursor:pointer;font-weight:700;text-decoration:underline" onclick="close_(\'register-m\');open_(\'login-m\')">直接登录</span>';
+    errEl.innerHTML='该邮箱已注册，<span style="color:var(--brand);cursor:pointer;font-weight:700;text-decoration:underline" onclick="close_('register-m');open_('login-m')">直接登录</span>';
     errEl.style.display='block'; return;
   }
   pendingRegData = {name:n, email:e, pwd:p};
   pendingVerifyCode = genCode();
-  document.getElementById('reg-email-hint').textContent = `验证码已发送到 ${e}`;
-  document.getElementById('demo-code-display').textContent = pendingVerifyCode;
-  document.getElementById('vcode').value = '';
-  document.getElementById('vcode-err').style.display = 'none';
-  regStep = 2; showRegStep();
-  toast_('📧 验证码已发送（演示模式已显示）', 'success');
+  // Show sending state
+  const btn = document.querySelector('#register-m .submit-btn');
+  btn.textContent = '发送中…'; btn.disabled = true;
+  emailjs.send('service_o1q6qhn', 'template_3ive3pm', {
+    to_email: e,
+    to_name: n,
+    code: pendingVerifyCode
+  }).then(() => {
+    btn.textContent = '发送验证码'; btn.disabled = false;
+    document.getElementById('reg-email-hint').textContent = '验证码已发送到 ' + e;
+    document.getElementById('demo-code-display').style.display = 'none';
+    document.getElementById('vcode').value = '';
+    document.getElementById('vcode-err').style.display = 'none';
+    regStep = 2; showRegStep();
+    toast_('📧 验证码已发送，请查收邮件', 'success');
+  }).catch(err => {
+    btn.textContent = '发送验证码'; btn.disabled = false;
+    errEl.textContent = '发送失败，请稍后重试'; errEl.style.display = 'block';
+    console.error('EmailJS error:', err);
+  });
 }
 
 function resendCode() {
+  if(!pendingRegData) return;
   pendingVerifyCode = genCode();
-  document.getElementById('demo-code-display').textContent = pendingVerifyCode;
+  emailjs.send('service_o1q6qhn', 'template_3ive3pm', {
+    to_email: pendingRegData.email,
+    to_name: pendingRegData.name,
+    code: pendingVerifyCode
+  }).then(() => {
+    toast_('📧 验证码已重新发送', 'success');
+  }).catch(() => {
+    toast_('发送失败，请稍后重试', 'danger');
+  });
   document.getElementById('vcode').value = '';
-  toast_('验证码已重新发送', 'success');
 }
 
 function doRegister() {
