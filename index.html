@@ -477,8 +477,24 @@ body.admin-mode .sidebar-l,body.admin-mode .sidebar-r{top:calc(var(--admin-bar)+
   .sidebar-r { display: none !important; }
   .sidebar-l { display: none !important; }
 }
+
+@media (max-width: 600px) {
+  #mobile-top-bar { display: block !important; }
+}
 </style>
-  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js">
+function syncMobileCity(el) {
+  document.querySelectorAll('[id^="m-city-"]').forEach(b => b.classList.remove('active'));
+  if(el) el.classList.add('active');
+}
+function populateMobileHotTags() {
+  const wrap = document.getElementById('mobile-hot-tags');
+  if(!wrap) return;
+  const tags = ['#整租','#合租','#搬家','#家教','#川菜','#奶茶','#律师','#装修','#iPhone','#招聘'];
+  wrap.innerHTML = tags.map(t => `<span onclick="document.getElementById('q').value='${t.slice(1)}';applyFilters()" style="background:#e0f4f6;color:var(--brand);padding:4px 10px;border-radius:20px;font-size:12px;cursor:pointer;white-space:nowrap">${t}</span>`).join('');
+}
+
+</script>
   <script>emailjs.init("gygV9w9ZpNfdubDn9");</script>
 </head>
 <body>
@@ -626,6 +642,18 @@ body.admin-mode .sidebar-l,body.admin-mode .sidebar-r{top:calc(var(--admin-bar)+
         <button class="sort-btn" onclick="dosort('price',this)">价格↑</button>
       </div>
     </div>
+    
+  <!-- MOBILE ONLY: city + tags bar -->
+  <div id="mobile-top-bar" style="display:none">
+    <div style="display:flex;gap:8px;overflow-x:auto;padding:10px 12px 0;scrollbar-width:none">
+      <div class="city-item active" id="m-city-dallas" onclick="chcity('达拉斯',this);syncMobileCity(this)">达拉斯</div>
+      <div class="city-item" id="m-city-houston" onclick="chcity('休斯顿',this);syncMobileCity(this)">休斯顿</div>
+      <div class="city-item" id="m-city-sa" onclick="chcity('圣安东尼奥',this);syncMobileCity(this)">圣安东尼奥</div>
+      <div class="city-item" id="m-city-austin" onclick="chcity('奥斯丁',this);syncMobileCity(this)">奥斯丁</div>
+    </div>
+    <div style="padding:8px 12px 4px;display:flex;gap:6px;flex-wrap:wrap" id="mobile-hot-tags"></div>
+  </div>
+
     <div class="masonry" id="feed"></div>
   </main>
 
@@ -1240,6 +1268,7 @@ function afterLogin() {
   }
   applyFilters();
   updateStats();
+  populateMobileHotTags();
 }
 
 function doLogout() {
