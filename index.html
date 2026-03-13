@@ -638,7 +638,6 @@ document.addEventListener('click', function(e) {
   <div class="cat-btn" onclick="setcat('房屋租售',this)">🏠 房屋租售 ▾</div>
   <div class="cat-btn" onclick="setcat('二手交易',this)">📦 二手交易 ▾</div>
   <div class="cat-btn" onclick="setcat('招聘求职',this)">💼 招聘求职 ▾</div>
-  <div class="cat-btn" onclick="setcat('生活服务',this)">🛠 生活服务</div>
   <div class="cat-btn" onclick="setcat('本地商铺',this)">🏪 本地商铺 ▾</div>
   <div class="cat-btn" onclick="setcat('本地新闻',this)">📰 本地新闻</div>
   <div class="cat-btn" id="nav-admin-btn" onclick="openAdminPanel('users')" style="display:none;background:#18181b;color:#fff;border-radius:8px;margin-left:8px;font-weight:700">🛡 管理后台</div>
@@ -676,7 +675,7 @@ document.addEventListener('click', function(e) {
         <div class="side-sub-item" onclick="setsub('求职',this)">求职</div>
       </div>
 
-      <div class="side-cat-item" onclick="setcat('生活服务',null,this)" id="sc-s"><div class="side-cat-left"><span>🛠</span>生活服务</div><span class="side-cat-n" id="sn-s">0</span></div>
+      <div class="side-cat-item" onclick="setcat('生活服务',null,this)" style="display:none" id="sc-s"><div class="side-cat-left"><span>🛠</span>生活服务</div><span class="side-cat-n" id="sn-s">0</span></div>
 
       <div class="side-cat-item" onclick="setcat('本地商铺',null,this)" id="sc-sh"><div class="side-cat-left"><span>🏪</span>本地商铺</div><span class="side-cat-n" id="sn-sh">0</span></div>
       <div id="sub-sh" style="display:none;padding-left:14px">
@@ -829,7 +828,6 @@ document.addEventListener('click', function(e) {
           <button class="chip active" onclick="pickchip(this)" data-cat="房屋租售">🏠 房屋租售</button>
           <button class="chip" onclick="pickchip(this)" data-cat="二手交易">📦 二手交易</button>
           <button class="chip" onclick="pickchip(this)" data-cat="招聘求职">💼 招聘求职</button>
-          <button class="chip" onclick="pickchip(this)" data-cat="生活服务">🛠 生活服务</button>
           <button class="chip" onclick="pickchip(this)" data-cat="本地商铺">🏪 本地商铺</button>
         </div>
         <div id="post-subchips-wrap" style="margin-top:8px;display:none">
@@ -1134,7 +1132,6 @@ const CATS = {
   '房屋租售':{bg:'#dbeafe',color:'#1e40af',icon:'🏠',subs:['出租/求租','商铺出租','商铺出售']},
   '二手交易':{bg:'#fee2e2',color:'#991b1b',icon:'📦',subs:['汽车','家具','杂货铺']},
   '招聘求职':{bg:'#dcfce7',color:'#166534',icon:'💼',subs:['招聘','求职']},
-  '生活服务':{bg:'#ede9fe',color:'#5b21b6',icon:'🛠',subs:[]},
   '本地商铺':{bg:'#fef9c3',color:'#854d0e',icon:'🏪',subs:['餐馆','律师','地产中介','贷款','财务会计','家政服务','装修','保险','医生','牙医']},
   '本地新闻':{bg:'#fce7f3',color:'#9d174d',icon:'📰',subs:[],adminOnly:true},
 };
@@ -1152,10 +1149,10 @@ let POSTS = [
   {id:1,cat:'房屋租售',title:'整租3B/2B独栋，Allen学区，宠物友好',desc:'独栋三室两卫，带双车库，有大草坪。刚装修，全新不锈钢电器。步行10分钟Allen High School，附近HMart、99 Ranch超市。',price:'$2,800/月',sub:'出租/求租',city:'达拉斯',loc:'Allen, TX · 75013',authorId:'u1',authorName:'王大明',contact:'微信: wangdaming2024',time:'10分钟前',likes:58,liked:false,comments:[{a:'李婷婷',c:'#2a9d8f',t:'请问几月份可以入住？',ts:'5分钟前'}],hasImg:true,imgs:[],tall:false,pinned:false,flagged:false,hidden:false,riskScore:5},
   {id:2,cat:'二手交易',title:'iPhone 15 Pro 256G 钛金色 95新',desc:'自用机，无拆无修。支持面交。',price:'$900',sub:'杂货铺',city:'达拉斯',loc:'Plano, TX',authorId:'u2',authorName:'陈小华',contact:'电话: 469-***-****',time:'1小时前',likes:33,liked:false,comments:[],hasImg:true,tall:true,pinned:false,flagged:false,hidden:false,riskScore:15},
   {id:3,cat:'招聘求职',title:'招聘全职中文教师，待遇优厚',desc:'达拉斯知名中文学校招聘全职教师。提供医保、带薪假期。',price:'$50k-65k/年',sub:'招聘',city:'达拉斯',loc:'Richardson, TX',authorId:'u3',authorName:'李婷婷',contact:'hr@huaxing.edu',time:'2小时前',likes:22,liked:false,comments:[],hasImg:false,imgs:[],tall:false,pinned:false,flagged:false,hidden:false,riskScore:8},
-  {id:4,cat:'生活服务',title:'专业华人搬家，10年口碑',desc:'达拉斯本地华人搬家公司，专业打包，不收隐藏费。',price:'$80/小时起',sub:null,city:'达拉斯',loc:'Frisco, TX',authorId:'u1',authorName:'王大明',contact:'微信: bangjiakuai',time:'3小时前',likes:71,liked:false,comments:[],hasImg:false,imgs:[],tall:false,pinned:false,flagged:false,hidden:false,riskScore:3},
+  {id:4,cat:'本地商铺',title:'专业华人搬家，10年口碑',desc:'达拉斯本地华人搬家公司，专业打包，不收隐藏费。',price:'$80/小时起',sub:null,city:'达拉斯',loc:'Frisco, TX',authorId:'u1',authorName:'王大明',contact:'微信: bangjiakuai',time:'3小时前',likes:71,liked:false,comments:[],hasImg:false,imgs:[],tall:false,pinned:false,flagged:false,hidden:false,riskScore:3},
   {id:5,cat:'本地商铺',title:'【新开】川渝火锅正宗麻辣',desc:'达拉斯最正宗的川渝火锅，牛油红汤，每天现熬。毛肚鸭肠必点！',price:'人均$35',sub:'餐馆',city:'达拉斯',loc:'Plano, TX · Legacy Dr',authorId:'u2',authorName:'陈小华',contact:'预约: 214-***-****',time:'4小时前',likes:142,liked:false,comments:[{a:'吃货小王',c:'#f4a261',t:'毛肚超新鲜！',ts:'3小时前'}],hasImg:true,tall:true,pinned:false,flagged:false,hidden:false,riskScore:10},
   {id:6,cat:'二手交易',title:'【紧急】代购名包 LV Gucci 全新正品 超低价',desc:'美国直邮，正品保证！限时特价，先到先得！微信联系我获取更多图片，需要转账定金。',price:'$200起',sub:'杂货铺',city:'休斯顿',loc:'Houston, TX',authorId:'u4',authorName:'张会计',contact:'微信: daigou2024vip',time:'5小时前',likes:3,liked:false,comments:[],hasImg:true,imgs:[],tall:false,pinned:false,flagged:true,hidden:false,riskScore:88},
-  {id:7,cat:'生活服务',title:'注册会计师·报税·公司注册·一站式',desc:'CPA执照，专注服务华人客户10年。个人报税$150起，中英文服务。',price:'$150起',sub:'财务会计',city:'达拉斯',loc:'Addison, TX',authorId:'u4',authorName:'张会计',contact:'预约: 972-***-****',time:'7小时前',likes:53,liked:false,comments:[],hasImg:false,imgs:[],tall:false,pinned:false,flagged:false,hidden:false,riskScore:12},
+  {id:7,cat:'本地商铺',title:'注册会计师·报税·公司注册·一站式',desc:'CPA执照，专注服务华人客户10年。个人报税$150起，中英文服务。',price:'$150起',sub:'财务会计',city:'达拉斯',loc:'Addison, TX',authorId:'u4',authorName:'张会计',contact:'预约: 972-***-****',time:'7小时前',likes:53,liked:false,comments:[],hasImg:false,imgs:[],tall:false,pinned:false,flagged:false,hidden:false,riskScore:12},
 ];
 
 let REPORTS = [
@@ -1486,7 +1483,7 @@ function render() {
     if(p.cat==='房屋租售')cnts.h++;
     else if(p.cat==='二手交易')cnts.u++;
     else if(p.cat==='招聘求职')cnts.j++;
-    else if(p.cat==='生活服务')cnts.s++;
+    
     else if(p.cat==='本地商铺')cnts.sh++;
   });
   document.getElementById('sn-all').textContent = POSTS.filter(p=>!p.hidden||isAdmin).length;
@@ -1655,8 +1652,8 @@ function submitPost() {
     toast_('本地新闻版块仅管理员可发布', 'danger'); return;
   }
   const catEl = document.querySelector('#post-chips .chip.active');
-  const catText = catEl ? (catEl.dataset.cat || catEl.textContent.trim()) : '生活服务';
-  const cat = Object.keys(CATS).find(k => catText.includes(k)) || '生活服务';
+  const catText = catEl ? (catEl.dataset.cat || catEl.textContent.trim()) : '房屋租售';
+  const cat = Object.keys(CATS).find(k => catText.includes(k)) || '房屋租售';
   const subEl = document.querySelector('#post-subchips .chip.active');
   const sub = subEl ? subEl.dataset.sub : null;
 
@@ -2548,7 +2545,7 @@ function nePublish() {
   <div class="mbb-item" onclick="setcat('全部',null)">🏠<span>首页</span></div>
   <div class="mbb-item" onclick="setcat('本地新闻',null)">📰<span>新闻</span></div>
   <div class="mbb-post" onclick="openPostModal()">＋</div>
-  <div class="mbb-item" onclick="toggleMobileCity()">📍<span id="mbb-city-label">达拉斯</span></div>
+  <div class="mbb-item" onclick="open_('promo-m')">🚀<span>推广</span></div>
   <div class="mbb-item" onclick="open_(currentUser?'user-m':'login-m')">👤<span>我的</span></div>
 </div>
 
