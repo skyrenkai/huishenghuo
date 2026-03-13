@@ -478,8 +478,68 @@ body.admin-mode .sidebar-l,body.admin-mode .sidebar-r{top:calc(var(--admin-bar)+
   .sidebar-l { display: none !important; }
 }
 
+#mobile-top-bar { display: none; }
+@media (max-width: 600px) { #mobile-top-bar { display: block !important; } }
+
+#mobile-bottom-bar {
+  display: none;
+}
 @media (max-width: 600px) {
-  #mobile-top-bar { display: block !important; }
+  #mobile-bottom-bar {
+    display: flex;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 56px;
+    background: #fff;
+    border-top: 1px solid #e0e0e0;
+    z-index: 300;
+    align-items: center;
+    justify-content: space-around;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .mbb-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 10px;
+    color: #888;
+    cursor: pointer;
+    gap: 2px;
+    flex: 1;
+  }
+  .mbb-item span { font-size: 10px; }
+  .mbb-post {
+    width: 48px; height: 48px;
+    background: var(--brand);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 28px;
+    font-weight: 300;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(62,158,168,0.4);
+    flex-shrink: 0;
+    margin-bottom: 8px;
+  }
+  /* Add bottom padding to feed so content not hidden behind bar */
+  .main { padding-bottom: 70px !important; }
+  /* Hide desktop post fab on mobile */
+  .post-fab { display: none !important; }
+  /* Mobile city popup */
+  #mobile-city-popup {
+    position: fixed;
+    bottom: 56px; left: 0; right: 0;
+    background: #fff;
+    border-top: 1px solid #eee;
+    border-radius: 16px 16px 0 0;
+    padding: 16px;
+    z-index: 400;
+    display: none;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+  }
+  #mobile-city-popup.open { display: block; }
 }
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js">
@@ -493,6 +553,20 @@ function populateMobileHotTags() {
   const tags = ['#整租','#合租','#搬家','#家教','#川菜','#奶茶','#律师','#装修','#iPhone','#招聘'];
   wrap.innerHTML = tags.map(t => `<span onclick="document.getElementById('q').value='${t.slice(1)}';applyFilters()" style="background:#e0f4f6;color:var(--brand);padding:4px 10px;border-radius:20px;font-size:12px;cursor:pointer;white-space:nowrap">${t}</span>`).join('');
 }
+
+
+function toggleMobileCity() {
+  const p = document.getElementById('mobile-city-popup');
+  p.classList.toggle('open');
+}
+// Close city popup when clicking overlay
+document.addEventListener('click', function(e) {
+  const popup = document.getElementById('mobile-city-popup');
+  const bar = document.getElementById('mobile-bottom-bar');
+  if(popup && popup.classList.contains('open') && !popup.contains(e.target) && !bar.contains(e.target)) {
+    popup.classList.remove('open');
+  }
+});
 
 </script>
   <script>emailjs.init("gygV9w9ZpNfdubDn9");</script>
@@ -644,7 +718,7 @@ function populateMobileHotTags() {
     </div>
     
   <!-- MOBILE ONLY: city + tags bar -->
-  <div id="mobile-top-bar" style="display:none">
+  <div id="mobile-top-bar">
     <div style="display:flex;gap:8px;overflow-x:auto;padding:10px 12px 0;scrollbar-width:none">
       <div class="city-item active" id="m-city-dallas" onclick="chcity('达拉斯',this);syncMobileCity(this)">达拉斯</div>
       <div class="city-item" id="m-city-houston" onclick="chcity('休斯顿',this);syncMobileCity(this)">休斯顿</div>
@@ -2468,5 +2542,26 @@ function nePublish() {
 }
 
 </script>
+
+<!-- MOBILE BOTTOM BAR -->
+<div id="mobile-bottom-bar">
+  <div class="mbb-item" onclick="setcat('全部',null)">🏠<span>首页</span></div>
+  <div class="mbb-item" onclick="setcat('本地新闻',null)">📰<span>新闻</span></div>
+  <div class="mbb-post" onclick="openPostModal()">＋</div>
+  <div class="mbb-item" onclick="toggleMobileCity()">📍<span id="mbb-city-label">达拉斯</span></div>
+  <div class="mbb-item" onclick="open_(currentUser?'user-m':'login-m')">👤<span>我的</span></div>
+</div>
+
+
+<div id="mobile-city-popup">
+  <div style="font-weight:700;font-size:14px;margin-bottom:12px;color:#333">选择城市</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+    <div class="city-item active" onclick="chcity('达拉斯',this);document.getElementById('mbb-city-label').textContent='达拉斯';toggleMobileCity()">达拉斯</div>
+    <div class="city-item" onclick="chcity('休斯顿',this);document.getElementById('mbb-city-label').textContent='休斯顿';toggleMobileCity()">休斯顿</div>
+    <div class="city-item" onclick="chcity('圣安东尼奥',this);document.getElementById('mbb-city-label').textContent='圣安东尼奥';toggleMobileCity()">圣安东尼奥</div>
+    <div class="city-item" onclick="chcity('奥斯丁',this);document.getElementById('mbb-city-label').textContent='奥斯丁';toggleMobileCity()">奥斯丁</div>
+  </div>
+</div>
+
 </body>
 </html>
