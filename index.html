@@ -399,6 +399,94 @@ body.admin-mode .sidebar-l,body.admin-mode .sidebar-r{top:calc(var(--admin-bar)+
 #ne-body blockquote{border-left:4px solid var(--brand);margin:12px 0;padding:8px 16px;background:#f0f9fa;border-radius:0 8px 8px 0;color:#555}
 #ne-body hr{border:none;border-top:2px solid #f0f0f0;margin:16px 0}
 .news-card-body img{max-width:100%;border-radius:8px;margin:8px 0}
+
+/* ══ 手机端响应式 ══ */
+@media (max-width: 600px) {
+  /* Header */
+  header {
+    height: 54px;
+    padding: 0 10px;
+    gap: 8px;
+  }
+  .logo img { height: 36px; width: 36px; }
+  #site-name-text { font-size: 15px; }
+  .city-pill { font-size: 12px; padding: 4px 8px; }
+  .search-wrap { flex: 1; min-width: 0; }
+  .search-wrap input { font-size: 13px; }
+  .btn-ghost { padding: 6px 10px; font-size: 12px; }
+  .btn-brand { padding: 6px 10px; font-size: 12px; }
+
+  /* Cat nav */
+  .cat-nav {
+    top: 54px;
+    height: auto;
+    min-height: 40px;
+    padding: 4px 10px;
+    flex-wrap: nowrap;
+    gap: 4px;
+  }
+  .cat-btn { font-size: 12px; padding: 5px 10px; white-space: nowrap; }
+
+  /* Subcat bar */
+  .subcat-bar { top: calc(54px + 40px); padding: 4px 10px; }
+  .sub-chip { font-size: 11px; padding: 4px 10px; }
+
+  /* Main layout */
+  .main {
+    margin-top: calc(54px + 40px + 12px) !important;
+    padding: 0 8px;
+    gap: 10px;
+  }
+  body.admin-mode .main {
+    margin-top: calc(var(--admin-bar) + 54px + 40px + 12px) !important;
+  }
+
+  /* Feed cards */
+  .feed { gap: 10px; }
+  .pcard { border-radius: 12px; }
+  .pcard-img { height: 140px; }
+  .pcard-body { padding: 10px; }
+  .pcard-title { font-size: 13px; }
+  .pcard-price { font-size: 14px; }
+  .pcard-desc { font-size: 11px; }
+
+  /* Detail modal */
+  .modal { width: 100% !important; max-width: 100% !important; border-radius: 16px 16px 0 0 !important; margin-top: auto; max-height: 92vh; }
+  .overlay { align-items: flex-end !important; }
+  .detail-img-area { height: 220px; }
+
+  /* Admin bar */
+  .admin-bar { padding: 0 6px; gap: 4px; overflow-x: auto; flex-wrap: nowrap; }
+  .ab-btn { font-size: 11px; padding: 5px 8px; white-space: nowrap; flex-shrink: 0; }
+
+  /* Post modal */
+  #post-m .modal, #login-m .modal, #register-m .modal {
+    width: 100% !important;
+    border-radius: 16px 16px 0 0 !important;
+    margin-top: auto;
+    max-height: 92vh;
+    overflow-y: auto;
+  }
+
+  /* News editor */
+  #news-editor-m > div {
+    width: 100% !important;
+    height: 96vh !important;
+    border-radius: 12px 12px 0 0 !important;
+    margin-bottom: 0 !important;
+  }
+  #news-editor-m .ne-tb { padding: 3px 6px; font-size: 11px; }
+  #news-editor-m > div > div:last-child > div:last-child > div {
+    padding: 20px 16px !important;
+  }
+
+  /* Fab button */
+  .post-fab { bottom: 16px; right: 16px; font-size: 13px; padding: 10px 16px; }
+
+  /* Hide right sidebar always on mobile */
+  .sidebar-r { display: none !important; }
+  .sidebar-l { display: none !important; }
+}
 </style>
 </head>
 <body>
