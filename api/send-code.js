@@ -1,6 +1,5 @@
-// In-memory store: { email -> { code, expiresAt } }
-// NOTE: This resets on cold start. For production, use Vercel KV or Redis.
-const codeStore = {};
+// Persist across warm invocations using global
+const codeStore = global._codeStore || (global._codeStore = {});
 
 function genCode() {
   return String(Math.floor(100000 + Math.random() * 900000));
@@ -33,8 +32,12 @@ export default async function handler(req, res) {
       to_email: email,
       to_name:  name || email,
       code:     code,
+      name:     name || email,
+      email:    email,
     },
   };
+
+  console.log('Sending to EmailJS, service:', process.env.EMAILJS_SERVICE_ID);
 
   try {
     const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
@@ -43,15 +46,16 @@ export default async function handler(req, res) {
       body: JSON.stringify(payload),
     });
 
+    const text = await response.text();
+    console.log('EmailJS status:', response.status, 'body:', text);
+
     if (!response.ok) {
-      const text = await response.text();
-      console.error('EmailJS error:', text);
-      return res.status(500).json({ error: '发送失败，请稍后重试' });
+      return res.status(500).json({ error: '邮件发送失败：' + text });
     }
 
     return res.status(200).json({ success: true });
   } catch (err) {
-    console.error('Send code error:', err);
-    return res.status(500).json({ error: '服务器错误，请稍后重试' });
+    console.error('Send code error:', err.message);
+    return res.status(500).json({ error: '服务器错误：' + err.message });
   }
 }
