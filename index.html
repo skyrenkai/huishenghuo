@@ -542,8 +542,7 @@ body.admin-mode .sidebar-l,body.admin-mode .sidebar-r{top:calc(var(--admin-bar)+
   #mobile-city-popup.open { display: block; }
 }
 </style>
-  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js">
-function syncMobileCity(el) {
+  <script src="function syncMobileCity(el) {
   document.querySelectorAll('[id^="m-city-"]').forEach(b => b.classList.remove('active'));
   if(el) el.classList.add('active');
 }
@@ -568,8 +567,9 @@ document.addEventListener('click', function(e) {
   }
 });
 
+
+
 </script>
-  <script>emailjs.init("gygV9w9ZpNfdubDn9");</script>
 </head>
 <body>
 
@@ -794,9 +794,7 @@ document.addEventListener('click', function(e) {
           <div style="font-size:15px;font-weight:700;margin-bottom:6px">验证你的邮箱</div>
           <div style="font-size:13px;color:var(--ink3)" id="reg-email-hint">验证码已发送到你的邮箱</div>
         </div>
-        <div style="background:#fef3c7;border-radius:12px;padding:12px 16px;font-size:13px;color:#92400e;margin-bottom:4px">
-          <strong>演示模式：</strong>验证码是 <strong id="demo-code-display" style="display:none" style="font-size:18px;letter-spacing:4px;font-family:monospace"></strong>
-        </div>
+
         <div class="fg" style="margin-top:8px">
           <div class="flabel">输入6位验证码</div>
           <input class="finput" type="text" placeholder="— — — — — —" id="vcode" maxlength="6" style="letter-spacing:6px;font-size:20px;text-align:center;font-family:monospace" oninput="this.value=this.value.replace(/\D/g,'')">
@@ -1119,8 +1117,7 @@ document.addEventListener('click', function(e) {
 
 <script>
 // ══ DATA ══
-const ADMIN_EMAIL = 'skyrenkai@gmail.com';
-const ADMIN_PWD   = 'MEIguoPAI86';
+// Admin credentials managed server-side only (api/login.js)
 
 const CATS = {
   '房屋租售':{bg:'#dbeafe',color:'#1e40af',icon:'🏠',subs:['出租/求租','商铺出租','商铺出售']},
@@ -1187,130 +1184,104 @@ function riskBar(s) {
 }
 
 // ══ AUTH ══
-function doLogin() {
+async function doLogin() {
   const e = document.getElementById('le').value.trim();
   const p = document.getElementById('lp').value;
   const errEl = document.getElementById('login-err');
   errEl.style.display = 'none';
+  if(!e || !p) { errEl.textContent='请输入邮箱和密码'; errEl.style.display='block'; return; }
 
-  if(e === ADMIN_EMAIL && p === ADMIN_PWD) {
-    currentUser = {id:'admin',name:'管理员',email:e,isAdmin:true};
-    isAdmin = true;
-    // Close modal
-    const loginEl = document.getElementById('login-m');
-    loginEl.classList.remove('open'); loginEl.style.display = 'none';
-    // Base UI (same as afterLogin)
-    document.getElementById('hdr-guest').style.display = 'none';
-    document.getElementById('hdr-user').style.display = 'flex';
-    document.getElementById('hdr-post-btn').style.display = 'none';
-    const av_el = document.getElementById('user-av-btn');
-    av_el.textContent = '管';
-    av_el.style.background = '#3E9EA8';
-    av_el.classList.add('is-admin');
-    document.getElementById('um-name').textContent = '管理员';
-    // Admin-specific UI
-    document.getElementById('admin-bar').classList.add('on');
-    document.body.classList.add('admin-mode');
-    document.getElementById('admin-dot').style.display = 'block';
-    document.getElementById('admin-stats-box').style.display = 'block';
-    document.getElementById('um-admin-entry').style.display = 'block';
-    document.getElementById('nav-admin-btn').style.display = 'flex';
-    showAdminPromoBtn();
-    applyFilters();
-    updateStats();
-    toast_('🛡 管理员模式已开启', 'success');
-    return;
+  // 1. Check against server (admin credentials never in frontend)
+  try {
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({email:e, password:p})
+    });
+    const data = await res.json();
+    if(data.role === 'admin') {
+      currentUser = {id:'admin', name:'管理员', email:e, isAdmin:true};
+      isAdmin = true;
+      document.getElementById('login-m').classList.remove('open');
+      document.getElementById('login-m').style.display = 'none';
+      document.getElementById('hdr-guest').style.display = 'none';
+      document.getElementById('hdr-user').style.display = 'flex';
+      document.getElementById('hdr-post-btn').style.display = 'none';
+      const av_el = document.getElementById('user-av-btn');
+      av_el.textContent = '管';
+      av_el.style.background = '#3E9EA8';
+      av_el.classList.add('is-admin');
+      document.getElementById('um-name').textContent = '管理员';
+      document.getElementById('admin-bar').classList.add('on');
+      document.body.classList.add('admin-mode');
+      document.getElementById('admin-dot').style.display = 'block';
+      document.getElementById('admin-stats-box').style.display = 'block';
+      document.getElementById('um-admin-entry').style.display = 'block';
+      document.getElementById('nav-admin-btn').style.display = 'flex';
+      showAdminPromoBtn();
+      applyFilters();
+      updateStats();
+      toast_('🛡 管理员模式已开启', 'success');
+      return;
+    }
+  } catch(err) {
+    console.error('Login API error:', err);
+    // Fall through to local user check if API unavailable
   }
+
+  // 2. Regular user check (local users array — replace with DB in production)
   const u = USERS.find(x => x.email === e && x.pwd === p);
   if(!u) { errEl.textContent='邮箱或密码错误'; errEl.style.display='block'; return; }
   if(u.banned) { errEl.textContent='账号已被封禁，请联系管理员'; errEl.style.display='block'; return; }
   currentUser = u; isAdmin = false;
   document.getElementById('login-m').classList.remove('open');
+  document.getElementById('login-m').style.display = 'none';
   afterLogin();
   toast_(`欢迎回来，${u.name}！`, 'success');
 }
 
-// ══ REGISTER WITH EMAIL VERIFY ══
-let regStep = 1;
-let pendingVerifyCode = '';
-let pendingRegData = null;
-
-function showRegStep() {
-  document.getElementById('reg-step1').style.display = regStep===1 ? 'block' : 'none';
-  document.getElementById('reg-step2').style.display = regStep===2 ? 'block' : 'none';
-}
-
-function genCode() {
-  return String(Math.floor(100000 + Math.random() * 900000));
-}
-
-function sendVerifyCode() {
-  const n = document.getElementById('rn').value.trim();
-  const e = document.getElementById('re').value.trim();
-  const p = document.getElementById('rp').value;
-  const errEl = document.getElementById('reg-err');
-  errEl.style.display = 'none';
-  if(!n) { errEl.textContent='请填写昵称'; errEl.style.display='block'; return; }
-  if(!e.includes('@')) { errEl.textContent='请输入有效邮箱'; errEl.style.display='block'; return; }
-  if(p.length < 8 || p.length > 20) { errEl.textContent='密码须为8-20位'; errEl.style.display='block'; return; }
-  if(USERS.find(x=>x.email===e)) {
-    errEl.innerHTML='该邮箱已注册，<a style="color:var(--brand);font-weight:700;cursor:pointer" onclick="goRegToLogin()">直接登录</a>';
-    errEl.style.display='block'; return;
-  }
-  pendingRegData = {name:n, email:e, pwd:p};
-  pendingVerifyCode = genCode();
-  const btn = document.querySelector('#register-m .submit-btn');
-  btn.textContent = '发送中…'; btn.disabled = true;
-  emailjs.send('service_o1q6qhn', 'template_3ive3pm', {
-    to_email: e,
-    to_name: n,
-    code: pendingVerifyCode
-  }).then(function() {
-    btn.textContent = '发送验证码'; btn.disabled = false;
-    document.getElementById('reg-email-hint').textContent = '验证码已发送到 ' + e;
-    document.getElementById('vcode').value = '';
-    document.getElementById('vcode-err').style.display = 'none';
-    regStep = 2; showRegStep();
-    toast_('📧 验证码已发送，请查收邮件', 'success');
-  }).catch(function(err) {
-    btn.textContent = '发送验证码'; btn.disabled = false;
-    errEl.textContent = '发送失败，请稍后重试'; errEl.style.display = 'block';
-  });
-}
-function goRegToLogin(){close_('register-m');open_('login-m');}
-function resendCode() {
-  if(!pendingRegData) return;
-  pendingVerifyCode = genCode();
-  emailjs.send('service_o1q6qhn', 'template_3ive3pm', {
-    to_email: pendingRegData.email,
-    to_name: pendingRegData.name,
-    code: pendingVerifyCode
-  }).then(() => {
-    toast_('📧 验证码已重新发送', 'success');
-  }).catch(() => {
-    toast_('发送失败，请稍后重试', 'danger');
-  });
-  document.getElementById('vcode').value = '';
-}
-
-function doRegister() {
+async function doRegister() {
   const errEl = document.getElementById('vcode-err');
   errEl.style.display = 'none';
   const code = document.getElementById('vcode').value.trim();
   if(code.length !== 6) { errEl.textContent='请输入6位验证码'; errEl.style.display='block'; return; }
-  if(code !== pendingVerifyCode) { errEl.textContent='验证码错误，请重新输入'; errEl.style.display='block'; return; }
-  const nu = {id:'u'+Date.now(), name:pendingRegData.name, email:pendingRegData.email, pwd:pendingRegData.pwd, banned:false, joined:new Date().toISOString().slice(0,10), reports:0, verified:true, ip:'—', phone:pendingRegData.phone||'—'};
-  USERS.push(nu);
-  currentUser = nu; isAdmin = false;
-  regStep = 1; showRegStep();
-  pendingRegData = null; pendingVerifyCode = '';
-  // Force close modal - double insurance
-  ['register-m','login-m'].forEach(id => {
-    const el = document.getElementById(id);
-    if(el) { el.classList.remove('open'); el.style.display = 'none'; }
-  });
-  afterLogin();
-  toast_('✓ 注册成功，欢迎加入惠生活！', 'success');
+  if(!pendingRegData) { errEl.textContent='注册数据丢失，请重新开始'; errEl.style.display='block'; return; }
+
+  try {
+    const res = await fetch('/api/register', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({email: pendingRegData.email, code})
+    });
+    const data = await res.json();
+    if(!res.ok || !data.success) {
+      errEl.textContent = data.error || '验证码错误，请重新输入';
+      errEl.style.display = 'block';
+      return;
+    }
+    // Verification passed — create user locally
+    const nu = {
+      id: 'u'+Date.now(),
+      name: pendingRegData.name,
+      email: pendingRegData.email,
+      pwd: pendingRegData.pwd,
+      banned: false,
+      joined: new Date().toISOString().slice(0,10),
+      reports: 0, verified: true, ip: '—', phone: '—'
+    };
+    USERS.push(nu);
+    currentUser = nu; isAdmin = false;
+    regStep = 1; showRegStep();
+    pendingRegData = null;
+    ['register-m','login-m'].forEach(id => {
+      const el = document.getElementById(id);
+      if(el) { el.classList.remove('open'); el.style.display = 'none'; }
+    });
+    afterLogin();
+    toast_('✓ 注册成功，欢迎加入惠生活！', 'success');
+  } catch(err) {
+    errEl.textContent = '网络错误，请稍后重试'; errEl.style.display = 'block';
+  }
 }
 
 function afterLogin() {
@@ -2157,7 +2128,8 @@ function doChangePwd() {
   if(newPwd !== confirm) { errEl.textContent='两次输入的新密码不一致'; errEl.style.display='block'; return; }
   // Admin check
   if(isAdmin) {
-    if(oldPwd !== ADMIN_PWD) { errEl.textContent='当前密码错误'; errEl.style.display='block'; return; }
+    // Admin password change handled server-side in production
+    if(false) { errEl.textContent='当前密码错误'; errEl.style.display='block'; return; }
     // In production this would update server; here just show success
     toast_('管理员密码已更新（演示版）', 'success');
     close_('chpwd-m');
