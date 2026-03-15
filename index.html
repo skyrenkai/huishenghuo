@@ -1240,6 +1240,76 @@ async function doLogin() {
   toast_(`欢迎回来，${u.name}！`, 'success');
 }
 
+// ══ REGISTER WITH EMAIL VERIFY ══
+let regStep = 1;
+let pendingRegData = null;
+
+function showRegStep() {
+  document.getElementById('reg-step1').style.display = regStep===1 ? 'block' : 'none';
+  document.getElementById('reg-step2').style.display = regStep===2 ? 'block' : 'none';
+}
+
+function goRegToLogin() {
+  close_('register-m'); open_('login-m');
+}
+
+async function sendVerifyCode() {
+  const n = document.getElementById('rn').value.trim();
+  const e = document.getElementById('re').value.trim();
+  const p = document.getElementById('rp').value;
+  const errEl = document.getElementById('reg-err');
+  errEl.style.display = 'none';
+  if(!n) { errEl.textContent='请填写昵称'; errEl.style.display='block'; return; }
+  if(!e.includes('@')) { errEl.textContent='请输入有效邮箱'; errEl.style.display='block'; return; }
+  if(p.length < 8 || p.length > 20) { errEl.textContent='密码须为8-20位'; errEl.style.display='block'; return; }
+  if(USERS.find(x=>x.email===e)) {
+    errEl.innerHTML='该邮箱已注册，<a style="color:var(--brand);font-weight:700;cursor:pointer" onclick="goRegToLogin()">直接登录</a>';
+    errEl.style.display='block'; return;
+  }
+  pendingRegData = {name:n, email:e, pwd:p};
+  const btn = document.querySelector('#register-m .submit-btn');
+  btn.textContent = '发送中…'; btn.disabled = true;
+  try {
+    const res = await fetch('/api/send-code', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({email:e, name:n})
+    });
+    const data = await res.json();
+    if(!res.ok || !data.success) {
+      errEl.textContent = data.error || '发送失败，请稍后重试';
+      errEl.style.display = 'block';
+      btn.textContent = '发送验证码'; btn.disabled = false;
+      return;
+    }
+    btn.textContent = '发送验证码'; btn.disabled = false;
+    document.getElementById('reg-email-hint').textContent = '验证码已发送到 ' + e;
+    document.getElementById('vcode').value = '';
+    document.getElementById('vcode-err').style.display = 'none';
+    regStep = 2; showRegStep();
+    toast_('📧 验证码已发送，请查收邮件', 'success');
+  } catch(err) {
+    btn.textContent = '发送验证码'; btn.disabled = false;
+    errEl.textContent = '网络错误，请稍后重试'; errEl.style.display = 'block';
+  }
+}
+
+async function resendCode() {
+  if(!pendingRegData) return;
+  try {
+    await fetch('/api/send-code', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({email:pendingRegData.email, name:pendingRegData.name})
+    });
+    toast_('📧 验证码已重新发送', 'success');
+  } catch(e) {
+    toast_('发送失败，请稍后重试', 'danger');
+  }
+  document.getElementById('vcode').value = '';
+}
+
+
 async function doRegister() {
   const errEl = document.getElementById('vcode-err');
   errEl.style.display = 'none';
