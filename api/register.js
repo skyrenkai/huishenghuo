@@ -1,6 +1,5 @@
-// Shared in-memory store with send-code.js
-// In production, replace with Vercel KV: import { kv } from '@vercel/kv'
-const codeStore = {};
+// Must use same global store as send-code.js
+const codeStore = global._codeStore || (global._codeStore = {});
 
 export default function handler(req, res) {
   if (req.method !== 'POST') {
@@ -33,4 +32,3 @@ export default function handler(req, res) {
 
   return res.status(200).json({ success: true });
 }
-
