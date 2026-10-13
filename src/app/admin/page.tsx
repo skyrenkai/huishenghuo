@@ -6,6 +6,7 @@ import { getCurrentUser } from '@/lib/session'
 import { timeAgo } from '@/lib/format'
 import { getCategory, cityName } from '@/lib/categories'
 import { AdminButton } from './AdminButton'
+import BannerManager, { type AdminBanner } from './BannerManager'
 import { displayEmail } from '@/lib/wechat'
 import PinControl from '@/components/PinControl'
 import { formatDate, isPinned } from '@/lib/pin'
@@ -30,7 +31,7 @@ export default async function AdminPage({ searchParams }: { searchParams: SP }) 
   if (!me.profile?.is_admin) redirect('/')
 
   const sp = await searchParams
-  const tab = sp.tab === 'posts' || sp.tab === 'users' ? sp.tab : 'reports'
+  const tab = sp.tab === 'posts' || sp.tab === 'users' || sp.tab === 'banners' ? sp.tab : 'reports'
   const q = (sp.q || '').trim()
   const supabase = await createClient()
 
@@ -43,6 +44,7 @@ export default async function AdminPage({ searchParams }: { searchParams: SP }) 
   let reports: ReportRow[] = []
   let posts: PostRowA[] = []
   let users: UserRow[] = []
+  let banners: AdminBanner[] = []
 
   if (tab === 'reports') {
     const { data } = await supabase
@@ -61,6 +63,13 @@ export default async function AdminPage({ searchParams }: { searchParams: SP }) 
     if (q) query = query.ilike('title', `%${q.replace(/[%_\\]/g, (m) => `\\${m}`)}%`)
     const { data } = await query
     posts = (data ?? []) as unknown as PostRowA[]
+  } else if (tab === 'banners') {
+    const { data } = await supabase
+      .from('banners')
+      .select('id, image_url, link_url, title, sort, is_active, ends_at')
+      .order('sort', { ascending: true })
+      .order('id', { ascending: true })
+    banners = (data ?? []) as AdminBanner[]
   } else {
     // 管理员身份和封号状态是保密字段，只能通过 admin_users() 读
     const { data } = await supabase.rpc('admin_users', { q: q.replace(/[%_\\]/g, (m) => `\\${m}`) })
@@ -83,9 +92,12 @@ export default async function AdminPage({ searchParams }: { searchParams: SP }) 
           <Tab href="/admin" active={tab === 'reports'}>举报</Tab>
           <Tab href="/admin?tab=posts" active={tab === 'posts'}>帖子</Tab>
           <Tab href="/admin?tab=users" active={tab === 'users'}>用户</Tab>
+          <Tab href="/admin?tab=banners" active={tab === 'banners'}>广告</Tab>
         </div>
 
-        {tab !== 'reports' && (
+        {tab === 'banners' && <BannerManager userId={me.id} banners={banners} />}
+
+        {(tab === 'posts' || tab === 'users') && (
           <form className="flex gap-2 border-b border-line px-4 py-2">
             <input type="hidden" name="tab" value={tab} />
             <input name="q" defaultValue={q} placeholder={tab === 'posts' ? '搜索标题' : '搜索昵称或邮箱'} className="h-9 flex-1 rounded-lg bg-paper px-3 text-base outline-none" />

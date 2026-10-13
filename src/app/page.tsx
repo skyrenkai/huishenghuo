@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import CategoryGrid from '@/components/CategoryGrid'
+import BannerCarousel, { type Banner } from '@/components/BannerCarousel'
+import { createClient } from '@/lib/supabase/server'
 import Feed from '@/components/Feed'
 import WechatShareImage from '@/components/WechatShareImage'
 import { fetchFeed } from '@/lib/feed'
@@ -13,7 +15,20 @@ export default async function HomePage({ searchParams }: { searchParams: SP }) {
   const city = await getSelectedCity()
   const sort = sp.sort === 'hot' ? 'hot' : 'new'
   const page = Number(sp.page) || 1
-  const { posts, hasMore, error } = await fetchFeed({ city, sort, page })
+  const supabase = await createClient()
+  const [{ posts, hasMore, error }, { data: bannerRows }] = await Promise.all([
+    fetchFeed({ city, sort, page }),
+    // 广告位：只取正在显示、没到期的（数据库规则也会过滤）
+    supabase
+      .from('banners')
+      .select('id, image_url, link_url, title')
+      .eq('is_active', true)
+      .or(`ends_at.is.null,ends_at.gt.${new Date().toISOString()}`)
+      .order('sort', { ascending: true })
+      .order('id', { ascending: true })
+      .limit(10),
+  ])
+  const banners = page === 1 && sort === 'new' ? ((bannerRows ?? []) as Banner[]) : []
 
   const href = (s: string, p = 1) => {
     const q = new URLSearchParams()
@@ -26,6 +41,7 @@ export default async function HomePage({ searchParams }: { searchParams: SP }) {
   return (
     <div className="md:px-4">
       <WechatShareImage src="/og.png" />
+      <BannerCarousel banners={banners} />
       <CategoryGrid />
 
       <div className="mt-2 flex items-center gap-5 border-b border-line bg-white px-4 md:mt-4 md:rounded-t-xl md:border md:border-b-0">

@@ -76,3 +76,17 @@ export async function deleteImages(supabase: SupabaseClient, images: PostImage[]
   const paths = images.flatMap((im) => [pathFromUrl(im.url), pathFromUrl(im.thumb)]).filter(Boolean) as string[]
   if (paths.length) await supabase.storage.from(BUCKET).remove(paths)
 }
+
+// 广告图：宽一些（最长边 1600px），不需要缩略图
+export async function uploadBanner(supabase: SupabaseClient, userId: string, file: File): Promise<string> {
+  if (!file.type.startsWith('image/')) throw new Error('只能上传图片')
+  const bmp = await loadBitmap(file)
+  const blob = await toJpeg(bmp, 1600, 0.85)
+  if ('close' in bmp) bmp.close()
+  const path = `${userId}/banner-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`
+  const { error } = await supabase.storage
+    .from(BUCKET)
+    .upload(path, blob, { contentType: 'image/jpeg', cacheControl: '31536000', upsert: false })
+  if (error) throw new Error('图片上传失败，请重试')
+  return supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl
+}
