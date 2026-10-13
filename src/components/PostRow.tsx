@@ -14,6 +14,8 @@ export default function PostRow({ post, hidden }: { post: PostListItem; hidden?:
   return (
     <Link
       href={`/post/${post.id}`}
+      // 不自动预加载：列表里每条帖子都预加载会产生大量数据库请求；点击时才加载（有加载占位框，不会卡住）
+      prefetch={false}
       className="flex gap-3 border-b border-line bg-white px-4 py-3 last:border-b-0 hover:bg-[#fafafa]"
     >
       <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-paper">
