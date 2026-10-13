@@ -35,11 +35,11 @@ export default function PrivacyPage() {
       </Section>
 
       <Section title="删除你的信息">
-        <p>你可以随时在“我的”页面删除自己发布的帖子和评论。如需删除整个账号，请发邮件到 <a className="text-seal" href="mailto:skyrenkai@gmail.com">skyrenkai@gmail.com</a>，我们会在 7 天内处理。</p>
+        <p>你可以随时在“我的”页面删除自己发布的帖子和评论。如需删除整个账号，请微信联系 <span className="font-medium text-ink">Dallas_58</span>，我们会在 7 天内处理。</p>
       </Section>
 
       <Section title="联系我们">
-        <p>对本政策有任何疑问，请联系 <a className="text-seal" href="mailto:skyrenkai@gmail.com">skyrenkai@gmail.com</a>。</p>
+        <p>对本政策有任何疑问，请微信联系 <span className="font-medium text-ink">Dallas_58</span>。</p>
       </Section>
     </article>
   )
