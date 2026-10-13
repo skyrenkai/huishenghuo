@@ -10,6 +10,7 @@ import type { Post, PostContact } from '@/lib/types'
 import { Avatar } from '@/components/Header'
 import Gallery from './Gallery'
 import ContactBox from './ContactBox'
+import { maskEmail, maskPhone, maskWechat } from '@/lib/mask'
 import Comments from './Comments'
 import OwnerBar from './OwnerBar'
 import ReportButton from './ReportButton'
@@ -57,6 +58,15 @@ export default async function PostPage({ params }: { params: Params }) {
     getCurrentUser(),
     supabase.from('post_contacts').select('*').eq('post_id', post.id).maybeSingle(),
   ])
+  // 只把打码后的联系方式放进网页，完整的要点击后再取
+  const c = contact as PostContact | null
+  const masked = c
+    ? {
+        phone: c.phone ? maskPhone(c.phone) : undefined,
+        wechat: c.wechat ? maskWechat(c.wechat) : undefined,
+        email: c.email ? maskEmail(c.email) : undefined,
+      }
+    : null
   const isOwner = user?.id === post.author_id
   const isAdmin = !!user?.profile?.is_admin
   const cat = getCategory(post.category)
@@ -115,7 +125,7 @@ export default async function PostPage({ params }: { params: Params }) {
           <div className="mt-4 whitespace-pre-wrap break-words text-[15px] leading-7">{post.body}</div>
         )}
 
-        <ContactBox contact={contact as PostContact | null} />
+        <ContactBox postId={post.id} masked={masked} />
 
         <div className="mt-5 flex items-center gap-3 border-t border-line pt-4">
           <Avatar name={post.author?.name ?? '用户'} url={post.author?.avatar_url ?? null} size={36} />

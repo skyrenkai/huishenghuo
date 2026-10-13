@@ -28,12 +28,7 @@ export const CATEGORIES: Category[] = [
     color: '#c8322a',
     subs: ['房屋出租', '房屋求租', '房屋出售', '房屋求购'],
     priceLabel: '租金 / 售价',
-    fields: [
-      { key: 'layout', label: '户型', type: 'select', options: ['单间', '1室', '2室', '3室', '4室及以上', '整栋'] },
-      { key: 'sqft', label: '面积', type: 'number', suffix: 'sqft' },
-      { key: 'area', label: '小区 / 路口', type: 'text', placeholder: '例如：Legacy Dr & Preston' },
-      { key: 'move_in', label: '入住时间', type: 'text', placeholder: '例如：随时、11 月 1 日' },
-    ],
+    fields: [], // 户型、面积、小区、入住时间不再单独填写，写在详细描述里即可
   },
   {
     code: 'job',
