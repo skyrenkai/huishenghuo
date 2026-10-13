@@ -30,6 +30,7 @@ export function sanitizeNewsHtml(html: string): string {
         'font-style': [/^(normal|italic)$/],
         'text-align': [/^(left|right|center|justify)$/],
         'text-decoration': [/^[a-z\s-]+$/],
+        'text-decoration-line': [/^[a-z\s-]+$/],
         'text-indent': [SIZE],
         'line-height': [SIZE],
         'letter-spacing': [SIZE],

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { uploadImage } from '@/lib/images'
 import type { PostImage } from '@/lib/types'
+import EditorToolbar from './EditorToolbar'
 
 type Props = {
   userId: string
@@ -128,24 +129,10 @@ export default function RichEditor({ userId, initialHtml, onChange, onBusy }: Pr
     emit()
   }
 
-  function cmd(name: string, value?: string) {
-    ref.current?.focus()
-    document.execCommand(name, false, value)
-    emit()
-  }
-
-  const btn = 'rounded-md px-2.5 py-1 text-sm text-ink-soft hover:bg-paper'
-
   return (
     <div className="rounded-lg border border-line focus-within:border-seal">
-      <div className="flex flex-wrap items-center gap-1 border-b border-line bg-[#fafafa] px-2 py-1.5">
-        <button type="button" className={`${btn} font-bold`} onMouseDown={(e) => e.preventDefault()} onClick={() => cmd('bold')}>粗体</button>
-        <button type="button" className={btn} onMouseDown={(e) => e.preventDefault()} onClick={() => cmd('formatBlock', 'h3')}>小标题</button>
-        <button type="button" className={btn} onMouseDown={(e) => e.preventDefault()} onClick={() => cmd('formatBlock', 'p')}>正文</button>
-        <button type="button" className={btn} onMouseDown={(e) => e.preventDefault()} onClick={() => cmd('removeFormat')}>清除格式</button>
-        <button type="button" className={`${btn} text-seal`} onClick={() => fileRef.current?.click()}>插入图片</button>
-        <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={(e) => insertFiles(e.target.files)} />
-      </div>
+      <EditorToolbar editor={ref} onChange={emit} onInsertImage={() => fileRef.current?.click()} />
+      <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={(e) => insertFiles(e.target.files)} />
 
       <div
         ref={ref}
