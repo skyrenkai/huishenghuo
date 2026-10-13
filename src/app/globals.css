@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+/* 惠生活 配色：印章红 + 墨色 + 纸灰 */
+@theme {
+  --color-seal: #c8322a;        /* 印章红：品牌色、价格、主按钮 */
+  --color-seal-dark: #a42720;
+  --color-seal-soft: #fbeceb;
+  --color-ink: #1d2530;         /* 正文墨色 */
+  --color-ink-soft: #4a5563;
+  --color-mute: #8a93a0;        /* 次要文字 */
+  --color-line: #e6e8eb;        /* 分隔线 */
+  --color-paper: #f3f4f6;       /* 页面底色 */
+  --color-jade: #13795b;        /* 成功、已登录状态 */
+  --color-jade-soft: #e7f4ef;
+
+  --font-sans: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC",
+    "Source Han Sans SC", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+}
+
+/* 键盘操作时清晰的焦点框 */
+:focus-visible {
+  outline: 2px solid var(--color-seal);
+  outline-offset: 2px;
+}
+
+/* 印章：logo 和"已完成"标记共用 */
+.seal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-seal);
+  color: #fff;
+  font-weight: 700;
+  border-radius: 6px;
+  letter-spacing: 0;
+}
+
+.stamp-done {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--color-seal);
+  color: var(--color-seal);
+  border-radius: 6px;
+  font-weight: 700;
+  transform: rotate(-12deg);
+  background: rgba(255, 255, 255, 0.85);
+}
+
+/* 底部导航给 iPhone 底部横条留空 */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

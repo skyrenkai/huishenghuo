@@ -1,0 +1,201 @@
+import Link from 'next/link'
+import { redirect } from 'next/navigation'
+import type { Metadata } from 'next'
+import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser } from '@/lib/session'
+import { timeAgo } from '@/lib/format'
+import { getCategory, cityName } from '@/lib/categories'
+import { AdminButton } from './AdminButton'
+
+export const metadata: Metadata = { title: '管理后台' }
+
+type SP = Promise<{ tab?: string; q?: string }>
+
+type ReportRow = {
+  id: number
+  reason: string
+  created_at: string
+  post: { id: number; title: string; is_hidden: boolean } | null
+  reporter: { name: string } | null
+}
+type PostRowA = { id: number; title: string; category: string; city: string; is_hidden: boolean; is_pinned: boolean; created_at: string; author: { name: string } | null }
+type UserRow = { id: string; name: string; is_admin: boolean; is_banned: boolean; created_at: string }
+
+export default async function AdminPage({ searchParams }: { searchParams: SP }) {
+  const me = await getCurrentUser()
+  if (!me) redirect('/login?next=/admin')
+  if (!me.profile?.is_admin) redirect('/')
+
+  const sp = await searchParams
+  const tab = sp.tab === 'posts' || sp.tab === 'users' ? sp.tab : 'reports'
+  const q = (sp.q || '').trim()
+  const supabase = await createClient()
+
+  const [{ count: userCount }, { count: postCount }, { count: reportCount }] = await Promise.all([
+    supabase.from('profiles').select('id', { count: 'exact', head: true }),
+    supabase.from('posts').select('id', { count: 'exact', head: true }),
+    supabase.from('reports').select('id', { count: 'exact', head: true }).eq('status', 'open'),
+  ])
+
+  let reports: ReportRow[] = []
+  let posts: PostRowA[] = []
+  let users: UserRow[] = []
+
+  if (tab === 'reports') {
+    const { data } = await supabase
+      .from('reports')
+      .select('id, reason, created_at, post:posts(id, title, is_hidden), reporter:profiles(name)')
+      .eq('status', 'open')
+      .order('created_at', { ascending: false })
+      .limit(100)
+    reports = (data ?? []) as unknown as ReportRow[]
+  } else if (tab === 'posts') {
+    let query = supabase
+      .from('posts')
+      .select('id, title, category, city, is_hidden, is_pinned, created_at, author:profiles(name)')
+      .order('created_at', { ascending: false })
+      .limit(100)
+    if (q) query = query.ilike('title', `%${q.replace(/[%_\\]/g, (m) => `\\${m}`)}%`)
+    const { data } = await query
+    posts = (data ?? []) as unknown as PostRowA[]
+  } else {
+    // 管理员身份和封号状态是保密字段，只能通过 admin_users() 读
+    const { data } = await supabase.rpc('admin_users', { q: q.replace(/[%_\\]/g, (m) => `\\${m}`) })
+    users = (data ?? []) as UserRow[]
+  }
+
+  return (
+    <div className="space-y-2 md:space-y-4 md:px-4 md:pt-4">
+      <section className="bg-white px-4 py-4 md:rounded-xl md:border md:border-line">
+        <h1 className="text-lg font-bold">管理后台</h1>
+        <dl className="mt-3 grid grid-cols-3 text-center">
+          <Stat label="用户" value={userCount ?? 0} />
+          <Stat label="帖子" value={postCount ?? 0} />
+          <Stat label="待处理举报" value={reportCount ?? 0} highlight={(reportCount ?? 0) > 0} />
+        </dl>
+      </section>
+
+      <section className="bg-white md:overflow-hidden md:rounded-xl md:border md:border-line">
+        <div className="flex gap-5 border-b border-line px-4">
+          <Tab href="/admin" active={tab === 'reports'}>举报</Tab>
+          <Tab href="/admin?tab=posts" active={tab === 'posts'}>帖子</Tab>
+          <Tab href="/admin?tab=users" active={tab === 'users'}>用户</Tab>
+        </div>
+
+        {tab !== 'reports' && (
+          <form className="flex gap-2 border-b border-line px-4 py-2">
+            <input type="hidden" name="tab" value={tab} />
+            <input name="q" defaultValue={q} placeholder={tab === 'posts' ? '搜索标题' : '搜索昵称'} className="h-9 flex-1 rounded-lg bg-paper px-3 text-base outline-none" />
+            <button className="rounded-lg bg-ink px-3 text-sm text-white">搜索</button>
+          </form>
+        )}
+
+        {tab === 'reports' &&
+          (reports.length === 0 ? (
+            <Empty>没有待处理的举报</Empty>
+          ) : (
+            reports.map((r) => (
+              <div key={r.id} className="border-b border-line px-4 py-3 last:border-b-0">
+                <div className="flex items-start gap-2">
+                  <div className="min-w-0 flex-1">
+                    {r.post ? (
+                      <Link href={`/post/${r.post.id}`} className="font-medium hover:text-seal">
+                        {r.post.title}
+                      </Link>
+                    ) : (
+                      <span className="text-mute">帖子已删除</span>
+                    )}
+                    <p className="mt-0.5 text-sm text-seal">{r.reason}</p>
+                    <p className="text-xs text-mute">
+                      {r.reporter?.name ?? '用户'} 举报于 {timeAgo(r.created_at)}
+                      {r.post?.is_hidden && '，帖子已隐藏'}
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {r.post && !r.post.is_hidden && (
+                    <AdminButton table="posts" id={r.post.id} fields={{ is_hidden: true }} also={{ table: 'reports', id: r.id, fields: { status: 'resolved' } }} danger>
+                      隐藏帖子并处理
+                    </AdminButton>
+                  )}
+                  <AdminButton table="reports" id={r.id} fields={{ status: 'resolved' }}>
+                    忽略（无问题）
+                  </AdminButton>
+                </div>
+              </div>
+            ))
+          ))}
+
+        {tab === 'posts' &&
+          (posts.length === 0 ? (
+            <Empty>没有帖子</Empty>
+          ) : (
+            posts.map((p) => (
+              <div key={p.id} className="flex items-center gap-3 border-b border-line px-4 py-3 last:border-b-0">
+                <div className="min-w-0 flex-1">
+                  <Link href={`/post/${p.id}`} className={`block truncate ${p.is_hidden ? 'text-mute line-through' : 'font-medium'}`}>
+                    {p.is_pinned && <span className="mr-1 text-seal">[置顶]</span>}
+                    {p.title}
+                  </Link>
+                  <p className="text-xs text-mute">
+                    {getCategory(p.category)?.name}，{cityName(p.city)}，{p.author?.name ?? '用户'}，{timeAgo(p.created_at)}
+                  </p>
+                </div>
+                <AdminButton table="posts" id={p.id} fields={{ is_pinned: !p.is_pinned }}>
+                  {p.is_pinned ? '取消置顶' : '置顶'}
+                </AdminButton>
+                <AdminButton table="posts" id={p.id} fields={{ is_hidden: !p.is_hidden }} danger={!p.is_hidden}>
+                  {p.is_hidden ? '恢复' : '隐藏'}
+                </AdminButton>
+              </div>
+            ))
+          ))}
+
+        {tab === 'users' &&
+          (users.length === 0 ? (
+            <Empty>没有用户</Empty>
+          ) : (
+            users.map((u) => (
+              <div key={u.id} className="flex items-center gap-3 border-b border-line px-4 py-3 last:border-b-0">
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-medium">
+                    {u.name}
+                    {u.is_admin && <span className="ml-2 rounded bg-ink px-1 text-[11px] text-white">管理员</span>}
+                    {u.is_banned && <span className="ml-2 rounded bg-seal-soft px-1 text-[11px] text-seal">已封</span>}
+                  </p>
+                  <p className="text-xs text-mute">注册于 {timeAgo(u.created_at)}</p>
+                </div>
+                {!u.is_admin && (
+                  <AdminButton rpc={{ fn: 'admin_set_banned', args: { uid: u.id, banned: !u.is_banned } }} danger={!u.is_banned}>
+                    {u.is_banned ? '解封' : '封号'}
+                  </AdminButton>
+                )}
+              </div>
+            ))
+          ))}
+      </section>
+    </div>
+  )
+}
+
+function Stat({ label, value, highlight }: { label: string; value: number; highlight?: boolean }) {
+  return (
+    <div>
+      <dd className={`text-2xl font-bold ${highlight ? 'text-seal' : ''}`}>{value}</dd>
+      <dt className="text-xs text-mute">{label}</dt>
+    </div>
+  )
+}
+
+function Tab({ href, active, children }: { href: string; active: boolean; children: React.ReactNode }) {
+  return (
+    <Link href={href} className={`relative py-3 ${active ? 'font-semibold' : 'text-mute'}`}>
+      {children}
+      {active && <span className="absolute inset-x-1 bottom-0 h-[3px] rounded-full bg-seal" />}
+    </Link>
+  )
+}
+
+function Empty({ children }: { children: React.ReactNode }) {
+  return <p className="px-4 py-12 text-center text-sm text-mute">{children}</p>
+}

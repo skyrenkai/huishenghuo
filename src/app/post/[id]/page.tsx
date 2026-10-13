@@ -1,0 +1,149 @@
+import Link from 'next/link'
+import { notFound } from 'next/navigation'
+import type { Metadata } from 'next'
+import { cache } from 'react'
+import { createClient } from '@/lib/supabase/server'
+import { getCurrentUser } from '@/lib/session'
+import { getCategory, cityName } from '@/lib/categories'
+import { formatPrice, timeAgo } from '@/lib/format'
+import type { Post, PostContact } from '@/lib/types'
+import { Avatar } from '@/components/Header'
+import Gallery from './Gallery'
+import ContactBox from './ContactBox'
+import Comments from './Comments'
+import OwnerBar from './OwnerBar'
+import ReportButton from './ReportButton'
+import ViewPing from './ViewPing'
+import ShareButton from './ShareButton'
+
+type Params = Promise<{ id: string }>
+
+// 同一次请求里 generateMetadata 和页面共用一次查询
+const getPost = cache(async (id: number): Promise<Post | null> => {
+  if (!Number.isFinite(id)) return null
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('posts')
+    .select('*, author:profiles(name, avatar_url)')
+    .eq('id', id)
+    .maybeSingle()
+  return (data as Post) ?? null
+})
+
+export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
+  const post = await getPost(Number((await params).id))
+  if (!post) return { title: '信息不存在' }
+  const desc = [formatPrice(post.price), cityName(post.city), post.body.slice(0, 80)].filter(Boolean).join(' ')
+  const image = post.images?.[0]?.url
+  return {
+    title: post.title,
+    description: desc,
+    openGraph: {
+      title: post.title,
+      description: desc,
+      type: 'article',
+      images: image ? [{ url: image }] : undefined,
+    },
+  }
+}
+
+export default async function PostPage({ params }: { params: Params }) {
+  const post = await getPost(Number((await params).id))
+  if (!post) notFound()
+
+  const supabase = await createClient()
+  const [user, { data: contact }] = await Promise.all([
+    getCurrentUser(),
+    supabase.from('post_contacts').select('*').eq('post_id', post.id).maybeSingle(),
+  ])
+  const isOwner = user?.id === post.author_id
+  const isAdmin = !!user?.profile?.is_admin
+  const cat = getCategory(post.category)
+  const extras = (cat?.fields ?? [])
+    .map((f) => ({ label: f.label, value: post.extra?.[f.key], suffix: f.suffix }))
+    .filter((x) => x.value)
+
+  return (
+    <article className="md:px-4 md:pt-4">
+      <ViewPing id={post.id} />
+
+      {post.is_hidden && (
+        <p className="bg-seal-soft px-4 py-2 text-sm text-seal">这条信息已被管理员隐藏，只有你和管理员能看到。</p>
+      )}
+
+      {post.images.length > 0 && <Gallery images={post.images} />}
+
+      <div className="relative bg-white px-4 py-4 md:rounded-b-xl md:border md:border-t-0 md:border-line">
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          <Link href={`/c/${post.category}`} className="rounded px-1.5 py-0.5 text-white" style={{ background: cat?.color ?? '#8a93a0' }}>
+            {cat?.name ?? '其他'}
+          </Link>
+          <Link href={`/c/${post.category}?sub=${encodeURIComponent(post.subcategory)}`} className="rounded bg-paper px-1.5 py-0.5 text-ink-soft">
+            {post.subcategory}
+          </Link>
+          <span className="text-mute">{cityName(post.city)}</span>
+        </div>
+
+        <h1 className="mt-2 text-xl font-bold leading-snug">{post.title}</h1>
+
+        {post.price && <p className="mt-2 text-2xl font-bold text-seal">{formatPrice(post.price)}</p>}
+
+        {post.status === 'done' && (
+          <span className="stamp-done absolute right-6 top-6 px-3 py-1 text-lg">已完成</span>
+        )}
+
+        <p className="mt-2 text-xs text-mute">
+          发布于 {timeAgo(post.created_at)}，{post.view_count} 次浏览
+        </p>
+
+        {extras.length > 0 && (
+          <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 rounded-lg bg-paper p-3 text-sm">
+            {extras.map((x) => (
+              <div key={x.label} className="flex gap-2">
+                <dt className="shrink-0 text-mute">{x.label}</dt>
+                <dd className="min-w-0 break-words">
+                  {x.value}
+                  {x.suffix && <span className="ml-0.5 text-mute">{x.suffix}</span>}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        )}
+
+        {post.body && (
+          <div className="mt-4 whitespace-pre-wrap break-words text-[15px] leading-7">{post.body}</div>
+        )}
+
+        <ContactBox contact={contact as PostContact | null} />
+
+        <div className="mt-5 flex items-center gap-3 border-t border-line pt-4">
+          <Avatar name={post.author?.name ?? '用户'} url={post.author?.avatar_url ?? null} size={36} />
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium">{post.author?.name ?? '用户'}</p>
+            <p className="text-xs text-mute">发布者</p>
+          </div>
+          <ShareButton title={post.title} />
+          {!isOwner && <ReportButton postId={post.id} loggedIn={!!user} />}
+        </div>
+
+        {(isOwner || isAdmin) && (
+          <OwnerBar
+            id={post.id}
+            status={post.status}
+            bumpedAt={post.bumped_at}
+            isOwner={isOwner}
+            isAdmin={isAdmin}
+            isHidden={post.is_hidden}
+            isPinned={post.is_pinned}
+          />
+        )}
+
+        <p className="mt-4 rounded-lg bg-paper px-3 py-2 text-xs leading-5 text-mute">
+          交易时请当面验货，不要提前转账或支付定金。遇到可疑信息请点“举报”。
+        </p>
+      </div>
+
+      <Comments postId={post.id} currentUserId={user?.id ?? null} isAdmin={isAdmin} />
+    </article>
+  )
+}

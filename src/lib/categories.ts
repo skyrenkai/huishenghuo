@@ -1,0 +1,169 @@
+// 分类配置：想加分类、改名字、加字段，只改这个文件即可
+
+export type FieldDef = {
+  key: string
+  label: string
+  type: 'text' | 'number' | 'select'
+  placeholder?: string
+  options?: string[]
+  suffix?: string
+}
+
+export type Category = {
+  code: string
+  name: string
+  glyph: string // 分类图标上的单个汉字
+  color: string // 图标底色
+  subs: string[] // 子类
+  fields: FieldDef[] // 该分类专属字段
+  priceLabel?: string // 价格框的名字；没有就不显示价格框
+  adminOnly?: boolean // 只有管理员能发
+}
+
+export const CATEGORIES: Category[] = [
+  {
+    code: 'house',
+    name: '房屋租售',
+    glyph: '房',
+    color: '#c8322a',
+    subs: ['房屋出租', '房屋求租', '房屋出售', '房屋求购'],
+    priceLabel: '租金 / 售价',
+    fields: [
+      { key: 'layout', label: '户型', type: 'select', options: ['单间', '1室', '2室', '3室', '4室及以上', '整栋'] },
+      { key: 'sqft', label: '面积', type: 'number', suffix: 'sqft' },
+      { key: 'area', label: '小区 / 路口', type: 'text', placeholder: '例如：Legacy Dr & Preston' },
+      { key: 'move_in', label: '入住时间', type: 'text', placeholder: '例如：随时、11 月 1 日' },
+    ],
+  },
+  {
+    code: 'job',
+    name: '求职招聘',
+    glyph: '职',
+    color: '#2f5d9e',
+    subs: ['招聘', '求职'],
+    priceLabel: '薪资',
+    fields: [
+      { key: 'position', label: '职位', type: 'text', placeholder: '例如：餐馆服务员、会计' },
+      { key: 'job_type', label: '工作类型', type: 'select', options: ['全职', '兼职', '临时工'] },
+      { key: 'company', label: '公司 / 店名', type: 'text' },
+    ],
+  },
+  {
+    code: 'used',
+    name: '二手闲置',
+    glyph: '闲',
+    color: '#13795b',
+    subs: ['出售', '求购', '免费送'],
+    priceLabel: '价格',
+    fields: [
+      { key: 'condition', label: '成色', type: 'select', options: ['全新', '几乎全新', '轻微使用痕迹', '明显使用痕迹'] },
+      { key: 'pickup', label: '交易方式', type: 'select', options: ['自取', '可送货', '可邮寄'] },
+    ],
+  },
+  {
+    code: 'car',
+    name: '汽车买卖',
+    glyph: '车',
+    color: '#4a5563',
+    subs: ['出售', '求购', '租车'],
+    priceLabel: '价格',
+    fields: [
+      { key: 'model', label: '品牌型号', type: 'text', placeholder: '例如：Toyota Camry' },
+      { key: 'year', label: '年份', type: 'number' },
+      { key: 'mileage', label: '里程', type: 'number', suffix: 'miles' },
+      { key: 'title', label: '产权', type: 'select', options: ['Clean title', 'Salvage / Rebuilt', '有贷款'] },
+    ],
+  },
+  {
+    code: 'ride',
+    name: '顺风车',
+    glyph: '拼',
+    color: '#d0832a',
+    subs: ['车找人', '人找车', '机场接送'],
+    priceLabel: '费用',
+    fields: [
+      { key: 'from', label: '出发地', type: 'text' },
+      { key: 'to', label: '目的地', type: 'text' },
+      { key: 'depart', label: '出发时间', type: 'text', placeholder: '例如：周五下午 3 点' },
+      { key: 'seats', label: '座位 / 人数', type: 'number' },
+    ],
+  },
+  {
+    code: 'biz',
+    name: '生意转让',
+    glyph: '店',
+    color: '#7a4b9e',
+    subs: ['店铺转让', '求购店铺', '寻找合伙'],
+    priceLabel: '转让价',
+    fields: [
+      { key: 'industry', label: '行业', type: 'select', options: ['餐馆', '美甲美发', '按摩', '零售', '其他'] },
+      { key: 'rent', label: '月租金', type: 'text' },
+    ],
+  },
+  {
+    code: 'service',
+    name: '本地服务',
+    glyph: '服',
+    color: '#0f6e8a',
+    subs: ['装修维修', '搬家', '家政保洁', '接送机', '美容美发', '法律财税', '教育培训', '其他'],
+    priceLabel: '收费',
+    fields: [{ key: 'area', label: '服务范围', type: 'text', placeholder: '例如：整个 DFW' }],
+  },
+  {
+    code: 'help',
+    name: '打听求助',
+    glyph: '问',
+    color: '#b5591f',
+    subs: ['打听', '求推荐', '求助'],
+    fields: [],
+  },
+  {
+    code: 'social',
+    name: '交友活动',
+    glyph: '友',
+    color: '#c24d7c',
+    subs: ['同城活动', '找搭子', '征婚交友'],
+    fields: [{ key: 'when', label: '时间', type: 'text' }],
+  },
+  {
+    code: 'deal',
+    name: '优惠信息',
+    glyph: '惠',
+    color: '#a42720',
+    subs: ['餐馆优惠', '超市特价', '其他'],
+    fields: [{ key: 'until', label: '截止日期', type: 'text' }],
+  },
+  {
+    code: 'news',
+    name: '本地新闻',
+    glyph: '讯',
+    color: '#1d2530',
+    subs: ['社区新闻', '公告'],
+    fields: [],
+    adminOnly: true,
+  },
+]
+
+export function getCategory(code?: string | null): Category | undefined {
+  return CATEGORIES.find((c) => c.code === code)
+}
+
+export const CITIES = [
+  { code: 'dallas', name: '达拉斯 Dallas' },
+  { code: 'plano', name: '普莱诺 Plano' },
+  { code: 'frisco', name: '弗里斯科 Frisco' },
+  { code: 'richardson', name: '理查森 Richardson' },
+  { code: 'allen', name: '艾伦 Allen' },
+  { code: 'mckinney', name: '麦金尼 McKinney' },
+  { code: 'irving', name: '欧文 Irving' },
+  { code: 'carrollton', name: '卡罗尔顿 Carrollton' },
+  { code: 'fortworth', name: '沃斯堡 Fort Worth' },
+  { code: 'houston', name: '休斯顿 Houston' },
+  { code: 'austin', name: '奥斯汀 Austin' },
+  { code: 'sanantonio', name: '圣安东尼奥 San Antonio' },
+]
+
+export function cityName(code?: string | null): string {
+  const c = CITIES.find((x) => x.code === code)
+  return c ? c.name.split(' ')[0] : ''
+}

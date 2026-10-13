@@ -1,0 +1,41 @@
+# 每周日自动备份数据库（在 GitHub 的服务器上运行，不需要你的电脑开机）
+# 备份文件在 GitHub 仓库 → Actions → 数据库备份 → 点某一次运行 → 页面底部 Artifacts 下载，保留 90 天
+# 需要先在仓库 Settings → Secrets and variables → Actions 里添加 SUPABASE_DB_URL
+
+name: 数据库备份
+
+on:
+  schedule:
+    - cron: '23 8 * * 0'
+  workflow_dispatch: # 也可以在 Actions 页面手动点 Run workflow
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检查配置
+        env:
+          DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "$DB_URL" ]; then
+            echo "还没有设置 SUPABASE_DB_URL，跳过备份"
+            exit 1
+          fi
+
+      - name: 导出数据库
+        env:
+          DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          mkdir backup
+          stamp=$(date -u +%Y-%m-%d)
+          # 用和 Supabase 同版本的 pg_dump；只导出 public（帖子、评论等）和 auth（账号）
+          docker run --rm -e DB_URL="$DB_URL" -v "$PWD/backup:/out" postgres:17 \
+            sh -c "pg_dump \"\$DB_URL\" --no-owner --no-privileges --schema=public --schema=auth -Fc -f /out/huishenghuo-$stamp.dump"
+          ls -lh backup
+
+      - name: 保存备份
+        uses: actions/upload-artifact@v4
+        with:
+          name: db-backup-${{ github.run_number }}
+          path: backup/
+          retention-days: 90
