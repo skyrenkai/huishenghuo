@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Feed from '@/components/Feed'
+import WechatShareImage from '@/components/WechatShareImage'
 import { fetchFeed } from '@/lib/feed'
 import { getSelectedCity } from '@/lib/session'
 import { getCategory, cityName } from '@/lib/categories'
@@ -43,6 +44,7 @@ export default async function CategoryPage({ params, searchParams }: { params: P
 
   return (
     <div className="md:px-4">
+      <WechatShareImage src={`/og/${category.code}.png`} />
       <div className="bg-white px-4 pt-4 md:mt-4 md:rounded-t-xl md:border md:border-b-0 md:border-line">
         <div className="flex items-center gap-3">
           <span

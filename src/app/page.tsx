@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import CategoryGrid from '@/components/CategoryGrid'
 import Feed from '@/components/Feed'
+import WechatShareImage from '@/components/WechatShareImage'
 import { fetchFeed } from '@/lib/feed'
 import { getSelectedCity } from '@/lib/session'
 import { cityName } from '@/lib/categories'
@@ -24,6 +25,7 @@ export default async function HomePage({ searchParams }: { searchParams: SP }) {
 
   return (
     <div className="md:px-4">
+      <WechatShareImage src="/og.png" />
       <CategoryGrid />
 
       <div className="mt-2 flex items-center gap-5 border-b border-line bg-white px-4 md:mt-4 md:rounded-t-xl md:border md:border-b-0">

@@ -16,6 +16,7 @@ import Comments from './Comments'
 import OwnerBar from './OwnerBar'
 import ReportButton from './ReportButton'
 import ViewPing from './ViewPing'
+import WechatShareImage from '@/components/WechatShareImage'
 import ShareButton from './ShareButton'
 
 type Params = Promise<{ id: string }>
@@ -80,6 +81,7 @@ export default async function PostPage({ params }: { params: Params }) {
   return (
     <article className="md:px-4 md:pt-4">
       <ViewPing id={post.id} />
+      <WechatShareImage src={post.images[0]?.url ?? (cat ? `/og/${post.category}.png` : '/og.png')} />
 
       {post.is_hidden && (
         <p className="bg-price/10 px-4 py-2 text-sm text-price">这条信息已被管理员隐藏，只有你和管理员能看到。</p>

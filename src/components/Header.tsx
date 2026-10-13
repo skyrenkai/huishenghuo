@@ -11,8 +11,8 @@ export default function Header({ city, user }: Props) {
     <header className="sticky top-0 z-20 border-b border-line bg-white/95 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-3xl items-center gap-3 px-4">
         <Link href="/" className="flex items-center gap-2" aria-label="惠生活首页">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.png" alt="" width={36} height={36} className="h-9 w-9" />
+          {/* 用背景图而不是 <img>：微信朋友圈会取页面里的第一张图片做缩略图，避免取到这个小 logo */}
+          <span className="h-9 w-9 shrink-0 bg-contain bg-center bg-no-repeat" style={{ backgroundImage: 'url(/logo-sm.png)' }} aria-hidden />
           <span className="text-lg font-bold tracking-wide">惠生活</span>
         </Link>
 
