@@ -12,7 +12,10 @@ type SP = Promise<{ sub?: string; sort?: string; page?: string }>
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { cat } = await params
   const c = getCategory(cat)
-  return { title: c ? c.name : '分类' }
+  return {
+    title: c ? c.name : '分类',
+    openGraph: c ? { title: `${c.name} - 惠生活`, images: [{ url: `/og/${c.code}.png`, width: 1200, height: 630 }] } : undefined,
+  }
 }
 
 export default async function CategoryPage({ params, searchParams }: { params: Params; searchParams: SP }) {

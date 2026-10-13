@@ -55,18 +55,19 @@ export async function fetchFeed(q: FeedQuery): Promise<FeedResult> {
   }
 
   // ---------- 最新：第 1 页最上面放正在置顶的帖子（到期的自动不算） ----------
-  let pinned: PostListItem[] = []
-  if (page === 1) {
-    const { data, error } = await base().gt('pinned_until', now).order('pinned_until', { ascending: false }).limit(10)
-    if (error) return done(null, error)
-    pinned = (data ?? []) as PostListItem[]
-  }
-
-  const { data, error } = await base()
-    .or(`pinned_until.is.null,pinned_until.lte.${now}`)
-    .order('bumped_at', { ascending: false })
-    .range(from, from + PAGE_SIZE)
-  const rest = done(data, error)
+  // 置顶和普通两次查询同时发出，不用排队等
+  const [pinRes, restRes] = await Promise.all([
+    page === 1
+      ? base().gt('pinned_until', now).order('pinned_until', { ascending: false }).limit(10)
+      : Promise.resolve({ data: [], error: null }),
+    base()
+      .or(`pinned_until.is.null,pinned_until.lte.${now}`)
+      .order('bumped_at', { ascending: false })
+      .range(from, from + PAGE_SIZE),
+  ])
+  if (pinRes.error) return done(null, pinRes.error)
+  const pinned = (pinRes.data ?? []) as PostListItem[]
+  const rest = done(restRes.data, restRes.error)
   return { ...rest, posts: [...pinned, ...rest.posts] }
 }
 

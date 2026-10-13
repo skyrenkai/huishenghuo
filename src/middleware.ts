@@ -24,7 +24,8 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  await supabase.auth.getUser()
+  // getClaims 在本地校验登录令牌，过期时自动刷新，比 getUser 少一次网络请求
+  await supabase.auth.getClaims()
   return response
 }
 

@@ -42,7 +42,8 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
       title: post.title,
       description: desc,
       type: 'article',
-      images: [{ url: image ?? '/og.png' }],
+      // 有图用第一张图；没图用板块图标（微信分享卡片会显示这个）
+      images: [{ url: image ?? (getCategory(post.category) ? `/og/${post.category}.png` : '/og.png') }],
     },
   }
 }
