@@ -16,13 +16,11 @@ function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState(params.get('error') || '')
-  const [notice, setNotice] = useState('')
   const [loading, setLoading] = useState(false)
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
-    setNotice('')
     setLoading(true)
     const supabase = createClient()
     const { error } = await supabase.auth.signInWithPassword({
@@ -38,19 +36,10 @@ function LoginForm() {
     router.refresh()
   }
 
-  async function forgot() {
-    setError('')
-    setNotice('')
-    if (!email.trim()) {
-      setError('请先在上面填写邮箱，再点忘记密码')
-      return
-    }
-    const supabase = createClient()
-    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: `${window.location.origin}/auth/callback?next=/reset-password`,
-    })
-    if (error) setError(authErrorZh(error.message))
-    else setNotice('重置密码的邮件已发送，请查收邮箱')
+  // 忘记密码：去找回密码页，用邮件验证码重设（不用点邮件里的链接）
+  function forgot() {
+    const e = email.trim()
+    router.push(`/reset-password${e ? `?email=${encodeURIComponent(e)}` : ''}`)
   }
 
   return (
@@ -93,7 +82,6 @@ function LoginForm() {
           </div>
 
           {error && <p className="text-sm text-price">{error}</p>}
-          {notice && <p className="text-sm text-jade">{notice}</p>}
 
           <button
             type="submit"

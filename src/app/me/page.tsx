@@ -80,6 +80,8 @@ export default async function MePage({ searchParams }: { searchParams: SP }) {
         <Link href="/terms" className="underline">服务条款</Link>
         <span className="mx-2">|</span>
         <Link href="/privacy" className="underline">隐私政策</Link>
+        <span className="mx-2">|</span>
+        <Link href="/reset-password" className="underline">修改密码</Link>
       </p>
     </div>
   )
