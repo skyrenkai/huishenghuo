@@ -6,9 +6,13 @@ export default function WechatShareImage({ src }: { src: string }) {
   const base = (process.env.NEXT_PUBLIC_SITE_URL || '').replace(/\/$/, '')
   const abs = src.startsWith('http') ? src : `${base}${src}`
   return (
-    <div style={{ display: 'none' }} aria-hidden>
+    // 不用 display:none（微信可能跳过完全隐藏的图片），而是放到屏幕外、透明，图片本身保持原尺寸
+    <div
+      aria-hidden
+      style={{ position: 'absolute', left: -9999, top: 0, width: 1, height: 1, overflow: 'hidden', opacity: 0, pointerEvents: 'none' }}
+    >
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={abs} alt="" width={600} height={600} />
+      <img src={abs} alt="" />
       <meta itemProp="image" content={abs} />
     </div>
   )
