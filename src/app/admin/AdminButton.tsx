@@ -56,12 +56,12 @@ export function AdminButton(props: Props) {
         disabled={busy}
         onClick={run}
         className={`rounded-full border px-3 py-1 text-sm disabled:opacity-50 ${
-          props.danger ? 'border-seal/40 text-seal' : 'border-line text-ink-soft'
+          props.danger ? 'border-price/40 text-price' : 'border-line text-ink-soft'
         }`}
       >
         {busy ? '…' : props.children}
       </button>
-      {error && <span className="text-xs text-seal">{error}</span>}
+      {error && <span className="text-xs text-price">{error}</span>}
     </span>
   )
 }

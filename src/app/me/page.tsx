@@ -37,7 +37,7 @@ export default async function MePage({ searchParams }: { searchParams: SP }) {
         <div className="min-w-0 flex-1">
           <ProfileEditor userId={user.id} initialName={profile?.name ?? ''} />
           <p className="truncate text-xs text-mute">{displayEmail(user.email) || '微信登录'}</p>
-          {profile?.is_banned && <p className="mt-1 text-xs text-seal">账号已被限制发布</p>}
+          {profile?.is_banned && <p className="mt-1 text-xs text-price">账号已被限制发布</p>}
         </div>
       </section>
 
@@ -62,7 +62,7 @@ export default async function MePage({ searchParams }: { searchParams: SP }) {
           posts.map((p) => (
             <div key={p.id} className="relative">
               {p.is_hidden && (
-                <span className="absolute right-3 top-2 z-10 rounded bg-seal-soft px-1.5 text-[11px] text-seal">已被隐藏</span>
+                <span className="absolute right-3 top-2 z-10 rounded bg-price/10 px-1.5 text-[11px] text-price">已被隐藏</span>
               )}
               <PostRow post={p} />
             </div>

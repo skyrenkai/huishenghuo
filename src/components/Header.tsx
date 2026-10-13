@@ -11,7 +11,8 @@ export default function Header({ city, user }: Props) {
     <header className="sticky top-0 z-20 border-b border-line bg-white/95 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-3xl items-center gap-3 px-4">
         <Link href="/" className="flex items-center gap-2" aria-label="惠生活首页">
-          <span className="seal h-8 w-8 text-lg">惠</span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.png" alt="" width={36} height={36} className="h-9 w-9" />
           <span className="text-lg font-bold tracking-wide">惠生活</span>
         </Link>
 

@@ -21,7 +21,7 @@ export type Post = {
   extra: Record<string, string>
   images: PostImage[]
   status: 'active' | 'done'
-  is_pinned: boolean
+  pinned_until: string | null
   is_hidden: boolean
   view_count: number
   comment_count: number
@@ -48,7 +48,7 @@ export type Comment = {
 
 // 列表页需要的字段（不取正文，省流量）
 export const POST_LIST_FIELDS =
-  'id, city, category, subcategory, title, price, images, status, is_pinned, view_count, comment_count, bumped_at, created_at'
+  'id, city, category, subcategory, title, price, images, status, pinned_until, view_count, comment_count, bumped_at, created_at'
 
 export type PostListItem = Pick<
   Post,
@@ -60,7 +60,7 @@ export type PostListItem = Pick<
   | 'price'
   | 'images'
   | 'status'
-  | 'is_pinned'
+  | 'pinned_until'
   | 'view_count'
   | 'comment_count'
   | 'bumped_at'

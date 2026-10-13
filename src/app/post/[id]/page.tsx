@@ -42,7 +42,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
       title: post.title,
       description: desc,
       type: 'article',
-      images: image ? [{ url: image }] : undefined,
+      images: [{ url: image ?? '/og.png' }],
     },
   }
 }
@@ -68,7 +68,7 @@ export default async function PostPage({ params }: { params: Params }) {
       <ViewPing id={post.id} />
 
       {post.is_hidden && (
-        <p className="bg-seal-soft px-4 py-2 text-sm text-seal">这条信息已被管理员隐藏，只有你和管理员能看到。</p>
+        <p className="bg-price/10 px-4 py-2 text-sm text-price">这条信息已被管理员隐藏，只有你和管理员能看到。</p>
       )}
 
       {post.images.length > 0 && <Gallery images={post.images} />}
@@ -86,7 +86,7 @@ export default async function PostPage({ params }: { params: Params }) {
 
         <h1 className="mt-2 text-xl font-bold leading-snug">{post.title}</h1>
 
-        {post.price && <p className="mt-2 text-2xl font-bold text-seal">{formatPrice(post.price)}</p>}
+        {post.price && <p className="mt-2 text-2xl font-bold text-price">{formatPrice(post.price)}</p>}
 
         {post.status === 'done' && (
           <span className="stamp-done absolute right-6 top-6 px-3 py-1 text-lg">已完成</span>
@@ -134,7 +134,7 @@ export default async function PostPage({ params }: { params: Params }) {
             isOwner={isOwner}
             isAdmin={isAdmin}
             isHidden={post.is_hidden}
-            isPinned={post.is_pinned}
+            pinnedUntil={post.pinned_until}
           />
         )}
 

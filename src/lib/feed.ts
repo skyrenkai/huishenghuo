@@ -16,35 +16,62 @@ export async function fetchFeed(q: FeedQuery): Promise<{ posts: PostListItem[]; 
   const supabase = await createClient()
   const page = Math.max(1, q.page || 1)
   const from = (page - 1) * PAGE_SIZE
+  const now = new Date().toISOString()
 
-  let query = supabase.from('posts').select(POST_LIST_FIELDS).eq('is_hidden', false)
+  // 同样的筛选条件（城市、分类、子类）
+  const base = () => {
+    let query = supabase.from('posts').select(POST_LIST_FIELDS).eq('is_hidden', false)
+    if (q.city) query = query.eq('city', q.city)
+    if (q.category) query = query.eq('category', q.category)
+    if (q.sub) query = query.eq('subcategory', q.sub)
+    return query
+  }
 
-  if (q.city) query = query.eq('city', q.city)
-  if (q.category) query = query.eq('category', q.category)
-  if (q.sub) query = query.eq('subcategory', q.sub)
+  // ---------- 搜索 ----------
   if (q.q) {
-    // 转义 % 和 _，避免用户输入被当成通配符
-    // 逗号、括号、引号会破坏查询语法，换成空格
+    // 逗号、括号、引号会破坏查询语法，换成空格；转义 % 和 _
     const kw = q.q
       .trim()
       .slice(0, 40)
       .replace(/[,()"'*]/g, ' ')
       .replace(/[%_\\]/g, (m) => `\\${m}`)
-    query = query.or(`title.ilike.%${kw}%,body.ilike.%${kw}%`)
+    const { data, error } = await base()
+      .or(`title.ilike.%${kw}%,body.ilike.%${kw}%`)
+      .order('bumped_at', { ascending: false })
+      .range(from, from + PAGE_SIZE)
+    return done(data, error)
   }
 
+  // ---------- 本月热门 ----------
   if (q.sort === 'hot') {
     const since = new Date(Date.now() - 30 * 86400 * 1000).toISOString()
-    query = query.gte('created_at', since).order('view_count', { ascending: false })
-  } else {
-    query = query.order('is_pinned', { ascending: false }).order('bumped_at', { ascending: false })
+    const { data, error } = await base()
+      .gte('created_at', since)
+      .order('view_count', { ascending: false })
+      .range(from, from + PAGE_SIZE)
+    return done(data, error)
   }
 
-  // 多取一条，用来判断还有没有下一页
-  const { data, error } = await query.range(from, from + PAGE_SIZE)
+  // ---------- 最新：第 1 页最上面放正在置顶的帖子（到期的自动不算） ----------
+  let pinned: PostListItem[] = []
+  if (page === 1) {
+    const { data } = await base().gt('pinned_until', now).order('pinned_until', { ascending: false }).limit(10)
+    pinned = (data ?? []) as PostListItem[]
+  }
+
+  const { data, error } = await base()
+    .or(`pinned_until.is.null,pinned_until.lte.${now}`)
+    .order('bumped_at', { ascending: false })
+    .range(from, from + PAGE_SIZE)
+  const rest = done(data, error)
+  return { posts: [...pinned, ...rest.posts], hasMore: rest.hasMore }
+}
+
+// 多取一条，用来判断还有没有下一页
+function done(data: unknown, error: { message: string } | null) {
   if (error) {
     console.error('fetchFeed', error.message)
-    return { posts: [], hasMore: false }
+    return { posts: [] as PostListItem[], hasMore: false }
   }
   const rows = (data ?? []) as PostListItem[]
   return { posts: rows.slice(0, PAGE_SIZE), hasMore: rows.length > PAGE_SIZE }

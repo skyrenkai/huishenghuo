@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { deleteImages } from '@/lib/images'
+import PinControl from '@/components/PinControl'
 import type { PostImage } from '@/lib/types'
 
 type Props = {
@@ -14,11 +15,11 @@ type Props = {
   isOwner: boolean
   isAdmin: boolean
   isHidden: boolean
-  isPinned: boolean
+  pinnedUntil: string | null
 }
 
 // 作者和管理员看到的操作栏
-export default function OwnerBar({ id, status, bumpedAt, isOwner, isAdmin, isHidden, isPinned }: Props) {
+export default function OwnerBar({ id, status, bumpedAt, isOwner, isAdmin, isHidden, pinnedUntil }: Props) {
   const router = useRouter()
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState('')
@@ -85,15 +86,13 @@ export default function OwnerBar({ id, status, bumpedAt, isOwner, isAdmin, isHid
         )}
         {isAdmin && (
           <>
-            <button type="button" disabled={busy} onClick={() => update({ is_pinned: !isPinned }, isPinned ? '已取消置顶' : '已置顶')} className={`${btn} border-line bg-white text-ink`}>
-              {isPinned ? '取消置顶' : '置顶'}
-            </button>
+            <PinControl postId={id} pinnedUntil={pinnedUntil} />
             <button type="button" disabled={busy} onClick={() => update({ is_hidden: !isHidden }, isHidden ? '已恢复显示' : '已隐藏')} className={`${btn} border-line bg-white text-ink`}>
               {isHidden ? '恢复显示' : '隐藏'}
             </button>
           </>
         )}
-        <button type="button" disabled={busy} onClick={remove} className={`${btn} border-seal/40 bg-white text-seal`}>
+        <button type="button" disabled={busy} onClick={remove} className={`${btn} border-price/40 bg-white text-price`}>
           删除
         </button>
       </div>

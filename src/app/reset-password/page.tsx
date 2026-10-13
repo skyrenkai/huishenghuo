@@ -39,7 +39,7 @@ export default function ResetPasswordPage() {
           value={password} onChange={(e) => setPassword(e.target.value)} className={inputCls} />
         <input type="password" autoComplete="new-password" placeholder="再输入一次" required
           value={confirm} onChange={(e) => setConfirm(e.target.value)} className={inputCls} />
-        {error && <p className="text-sm text-seal">{error}</p>}
+        {error && <p className="text-sm text-price">{error}</p>}
         <button type="submit" disabled={loading}
           className="h-11 w-full rounded-lg bg-seal text-base font-medium text-white disabled:opacity-60">
           {loading ? '保存中…' : '保存新密码'}

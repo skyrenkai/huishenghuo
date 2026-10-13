@@ -92,7 +92,7 @@ function LoginForm() {
             />
           </div>
 
-          {error && <p className="text-sm text-seal">{error}</p>}
+          {error && <p className="text-sm text-price">{error}</p>}
           {notice && <p className="text-sm text-jade">{notice}</p>}
 
           <button

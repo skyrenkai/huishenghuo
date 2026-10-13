@@ -112,7 +112,7 @@ export default function Comments({ postId, currentUserId, isAdmin }: Props) {
           后可以评论
         </p>
       )}
-      {error && <p className="mt-2 text-sm text-seal">{error}</p>}
+      {error && <p className="mt-2 text-sm text-price">{error}</p>}
     </section>
   )
 }

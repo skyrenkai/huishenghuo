@@ -1,10 +1,11 @@
 @import "tailwindcss";
 
-/* 惠生活 配色：印章红 + 墨色 + 纸灰 */
+/* 惠生活 配色：取自 logo 的湖蓝 + 价格红 + 墨色 + 纸灰 */
 @theme {
-  --color-seal: #c8322a;        /* 印章红：品牌色、价格、主按钮 */
-  --color-seal-dark: #a42720;
-  --color-seal-soft: #fbeceb;
+  --color-seal: #2b7d8b;        /* 品牌湖蓝：主按钮、选中状态、链接 */
+  --color-seal-dark: #1f5f6a;
+  --color-seal-soft: #e4f1f3;
+  --color-price: #d1432b;       /* 价格、已完成印章 */
   --color-ink: #1d2530;         /* 正文墨色 */
   --color-ink-soft: #4a5563;
   --color-mute: #8a93a0;        /* 次要文字 */
@@ -50,8 +51,8 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid var(--color-seal);
-  color: var(--color-seal);
+  border: 2px solid var(--color-price);
+  color: var(--color-price);
   border-radius: 6px;
   font-weight: 700;
   transform: rotate(-12deg);

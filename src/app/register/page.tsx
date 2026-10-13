@@ -117,7 +117,7 @@ function RegisterForm() {
                   value={confirm} onChange={(e) => setConfirm(e.target.value)} className={inputCls} />
               </div>
 
-              {error && <p className="text-sm text-seal">{error}</p>}
+              {error && <p className="text-sm text-price">{error}</p>}
 
               <button type="submit" disabled={loading}
                 className="h-11 w-full rounded-lg bg-seal text-base font-medium text-white active:bg-seal-dark disabled:opacity-60">
@@ -137,7 +137,7 @@ function RegisterForm() {
               placeholder="邮件里的验证码"
               className={`${inputCls} text-center text-2xl tracking-[0.35em]`}
             />
-            {error && <p className="text-sm text-seal">{error}</p>}
+            {error && <p className="text-sm text-price">{error}</p>}
             <button type="submit" disabled={loading || code.length < 6}
               className="h-11 w-full rounded-lg bg-seal text-base font-medium text-white active:bg-seal-dark disabled:opacity-60">
               {loading ? '验证中…' : '完成注册'}

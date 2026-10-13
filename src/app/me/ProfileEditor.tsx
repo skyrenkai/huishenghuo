@@ -52,7 +52,7 @@ export default function ProfileEditor({ userId, initialName }: { userId: string;
           取消
         </button>
       </div>
-      {error && <p className="mt-1 text-xs text-seal">{error}</p>}
+      {error && <p className="mt-1 text-xs text-price">{error}</p>}
     </div>
   )
 }

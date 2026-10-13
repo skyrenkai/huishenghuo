@@ -6,6 +6,8 @@ import { getCurrentUser } from '@/lib/session'
 import { timeAgo } from '@/lib/format'
 import { getCategory, cityName } from '@/lib/categories'
 import { AdminButton } from './AdminButton'
+import PinControl from '@/components/PinControl'
+import { formatDate, isPinned } from '@/lib/pin'
 
 export const metadata: Metadata = { title: '管理后台' }
 
@@ -18,7 +20,7 @@ type ReportRow = {
   post: { id: number; title: string; is_hidden: boolean } | null
   reporter: { name: string } | null
 }
-type PostRowA = { id: number; title: string; category: string; city: string; is_hidden: boolean; is_pinned: boolean; created_at: string; author: { name: string } | null }
+type PostRowA = { id: number; title: string; category: string; city: string; is_hidden: boolean; pinned_until: string | null; created_at: string; author: { name: string } | null }
 type UserRow = { id: string; name: string; is_admin: boolean; is_banned: boolean; created_at: string }
 
 export default async function AdminPage({ searchParams }: { searchParams: SP }) {
@@ -52,7 +54,7 @@ export default async function AdminPage({ searchParams }: { searchParams: SP }) 
   } else if (tab === 'posts') {
     let query = supabase
       .from('posts')
-      .select('id, title, category, city, is_hidden, is_pinned, created_at, author:profiles(name)')
+      .select('id, title, category, city, is_hidden, pinned_until, created_at, author:profiles(name)')
       .order('created_at', { ascending: false })
       .limit(100)
     if (q) query = query.ilike('title', `%${q.replace(/[%_\\]/g, (m) => `\\${m}`)}%`)
@@ -105,7 +107,7 @@ export default async function AdminPage({ searchParams }: { searchParams: SP }) 
                     ) : (
                       <span className="text-mute">帖子已删除</span>
                     )}
-                    <p className="mt-0.5 text-sm text-seal">{r.reason}</p>
+                    <p className="mt-0.5 text-sm text-price">{r.reason}</p>
                     <p className="text-xs text-mute">
                       {r.reporter?.name ?? '用户'} 举报于 {timeAgo(r.created_at)}
                       {r.post?.is_hidden && '，帖子已隐藏'}
@@ -134,16 +136,14 @@ export default async function AdminPage({ searchParams }: { searchParams: SP }) 
               <div key={p.id} className="flex items-center gap-3 border-b border-line px-4 py-3 last:border-b-0">
                 <div className="min-w-0 flex-1">
                   <Link href={`/post/${p.id}`} className={`block truncate ${p.is_hidden ? 'text-mute line-through' : 'font-medium'}`}>
-                    {p.is_pinned && <span className="mr-1 text-seal">[置顶]</span>}
+                    {isPinned(p.pinned_until) && <span className="mr-1 text-seal">[置顶至 {formatDate(p.pinned_until!)}]</span>}
                     {p.title}
                   </Link>
                   <p className="text-xs text-mute">
                     {getCategory(p.category)?.name}，{cityName(p.city)}，{p.author?.name ?? '用户'}，{timeAgo(p.created_at)}
                   </p>
                 </div>
-                <AdminButton table="posts" id={p.id} fields={{ is_pinned: !p.is_pinned }}>
-                  {p.is_pinned ? '取消置顶' : '置顶'}
-                </AdminButton>
+                <PinControl postId={p.id} pinnedUntil={p.pinned_until} />
                 <AdminButton table="posts" id={p.id} fields={{ is_hidden: !p.is_hidden }} danger={!p.is_hidden}>
                   {p.is_hidden ? '恢复' : '隐藏'}
                 </AdminButton>
@@ -161,7 +161,7 @@ export default async function AdminPage({ searchParams }: { searchParams: SP }) 
                   <p className="truncate font-medium">
                     {u.name}
                     {u.is_admin && <span className="ml-2 rounded bg-ink px-1 text-[11px] text-white">管理员</span>}
-                    {u.is_banned && <span className="ml-2 rounded bg-seal-soft px-1 text-[11px] text-seal">已封</span>}
+                    {u.is_banned && <span className="ml-2 rounded bg-price/10 px-1 text-[11px] text-price">已封</span>}
                   </p>
                   <p className="text-xs text-mute">注册于 {timeAgo(u.created_at)}</p>
                 </div>

@@ -148,19 +148,11 @@ export function getCategory(code?: string | null): Category | undefined {
   return CATEGORIES.find((c) => c.code === code)
 }
 
+// 达拉斯包括整个 DFW 地区（Plano、Frisco、Richardson 等）
 export const CITIES = [
   { code: 'dallas', name: '达拉斯 Dallas' },
-  { code: 'plano', name: '普莱诺 Plano' },
-  { code: 'frisco', name: '弗里斯科 Frisco' },
-  { code: 'richardson', name: '理查森 Richardson' },
-  { code: 'allen', name: '艾伦 Allen' },
-  { code: 'mckinney', name: '麦金尼 McKinney' },
-  { code: 'irving', name: '欧文 Irving' },
-  { code: 'carrollton', name: '卡罗尔顿 Carrollton' },
-  { code: 'fortworth', name: '沃斯堡 Fort Worth' },
   { code: 'houston', name: '休斯顿 Houston' },
   { code: 'austin', name: '奥斯汀 Austin' },
-  { code: 'sanantonio', name: '圣安东尼奥 San Antonio' },
 ]
 
 export function cityName(code?: string | null): string {

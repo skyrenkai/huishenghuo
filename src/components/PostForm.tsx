@@ -339,7 +339,7 @@ export default function PostForm({ userId, isAdmin, defaultCity, defaultCategory
       </section>
 
       <div className="safe-bottom sticky bottom-0 z-10 border-t border-line bg-white px-4 py-3 md:static md:rounded-xl md:border">
-        {error && <p className="mb-2 text-sm text-seal" role="alert">{error}</p>}
+        {error && <p className="mb-2 text-sm text-price" role="alert">{error}</p>}
         <button
           type="submit"
           disabled={saving || uploading > 0}

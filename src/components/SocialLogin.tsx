@@ -74,7 +74,7 @@ export default function SocialLogin({ next = '/' }: { next?: string }) {
           </button>
         )}
 
-        {err && <p className="text-center text-xs text-seal">{err}</p>}
+        {err && <p className="text-center text-xs text-price">{err}</p>}
       </div>
     </div>
   )

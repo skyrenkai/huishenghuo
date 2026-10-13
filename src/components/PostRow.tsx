@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { getCategory, cityName } from '@/lib/categories'
 import { formatPrice, timeAgo } from '@/lib/format'
+import { isPinned } from '@/lib/pin'
 import type { PostListItem } from '@/lib/types'
 
 // 列表里的一条：左图右文，没有图就用分类字当缩略图
@@ -34,7 +35,7 @@ export default function PostRow({ post }: { post: PostListItem }) {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <h3 className={`line-clamp-2 text-[15px] font-medium leading-snug ${done ? 'text-mute' : 'text-ink'}`}>
-          {post.is_pinned && <span className="mr-1 rounded bg-seal px-1 py-px align-[1px] text-[11px] text-white">置顶</span>}
+          {isPinned(post.pinned_until) && <span className="mr-1 rounded bg-seal px-1 py-px align-[1px] text-[11px] text-white">置顶</span>}
           {post.title}
         </h3>
         <div className="mt-auto flex items-end justify-between gap-2 pt-1">
@@ -45,7 +46,7 @@ export default function PostRow({ post }: { post: PostListItem }) {
             {post.comment_count > 0 && <span>{post.comment_count} 评论</span>}
           </p>
           {post.price && (
-            <span className="shrink-0 text-[15px] font-semibold text-seal">{formatPrice(post.price)}</span>
+            <span className="shrink-0 text-[15px] font-semibold text-price">{formatPrice(post.price)}</span>
           )}
         </div>
       </div>

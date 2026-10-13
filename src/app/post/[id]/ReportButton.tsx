@@ -76,7 +76,7 @@ export default function ReportButton({ postId, loggedIn }: { postId: number; log
                   placeholder="补充说明（可不填）"
                   className="mt-3 w-full rounded-lg border border-line p-3 text-base outline-none focus:border-seal"
                 />
-                {state === 'error' && <p className="mt-2 text-sm text-seal">提交失败，请重试</p>}
+                {state === 'error' && <p className="mt-2 text-sm text-price">提交失败，请重试</p>}
                 <div className="mt-4 flex gap-3">
                   <button type="button" onClick={() => setOpen(false)} className="h-11 flex-1 rounded-lg bg-paper text-ink-soft">
                     取消
