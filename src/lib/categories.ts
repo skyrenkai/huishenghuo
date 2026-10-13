@@ -18,6 +18,7 @@ export type Category = {
   fields: FieldDef[] // 该分类专属字段
   priceLabel?: string // 价格框的名字；没有就不显示价格框
   adminOnly?: boolean // 只有管理员能发
+  rich?: boolean // 图文文章：用富文本编辑器，可直接粘贴公众号文章；不显示联系方式
 }
 
 export const CATEGORIES: Category[] = [
@@ -129,6 +130,16 @@ export const CATEGORIES: Category[] = [
     fields: [{ key: 'until', label: '截止日期', type: 'text' }],
   },
   {
+    code: 'fun',
+    name: '吃喝玩乐',
+    glyph: '玩',
+    color: '#e76f51',
+    subs: ['美食', '游玩', '活动', '其他'],
+    fields: [],
+    adminOnly: true,
+    rich: true,
+  },
+  {
     code: 'news',
     name: '本地新闻',
     glyph: '讯',
@@ -136,8 +147,12 @@ export const CATEGORIES: Category[] = [
     subs: ['社区新闻', '公告'],
     fields: [],
     adminOnly: true,
+    rich: true,
   },
 ]
+
+// 只有管理员能发的板块（数据库规则里也有同样的名单：supabase/7-fun-category.sql）
+export const ADMIN_ONLY_CODES = CATEGORIES.filter((c) => c.adminOnly).map((c) => c.code)
 
 export function getCategory(code?: string | null): Category | undefined {
   return CATEGORIES.find((c) => c.code === code)

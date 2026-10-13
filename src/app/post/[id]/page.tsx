@@ -70,7 +70,7 @@ export default async function PostPage({ params }: { params: Params }) {
       }
     : null
   // 本地新闻的图文内容：服务器端过滤后再显示，防止有害代码
-  const richHtml = post.category === 'news' && post.body_html ? sanitizeNewsHtml(post.body_html) : ''
+  const richHtml = getCategory(post.category)?.rich && post.body_html ? sanitizeNewsHtml(post.body_html) : ''
   const isOwner = user?.id === post.author_id
   const isAdmin = !!user?.profile?.is_admin
   const cat = getCategory(post.category)
@@ -133,7 +133,7 @@ export default async function PostPage({ params }: { params: Params }) {
           <div className="mt-4 whitespace-pre-wrap break-words text-[15px] leading-7">{post.body}</div>
         )}
 
-        {post.category !== 'news' && <ContactBox postId={post.id} masked={masked} />}
+        {!getCategory(post.category)?.rich && <ContactBox postId={post.id} masked={masked} />}
 
         <div className="mt-5 flex items-center gap-3 border-t border-line pt-4">
           <Avatar name={post.author?.name ?? '用户'} url={post.author?.avatar_url ?? null} size={36} />

@@ -36,7 +36,7 @@ export default function PostForm({ userId, isAdmin, defaultCity, defaultCategory
   const [body, setBody] = useState(initial?.body ?? '')
   const [extra, setExtra] = useState<Record<string, string>>(initial?.extra ?? {})
   const [images, setImages] = useState<PostImage[]>(initial?.images ?? [])
-  // 本地新闻用图文编辑器：内容是 HTML，图片在文章里，第一张做封面
+  // 图文板块（本地新闻、吃喝玩乐）用图文编辑器：内容是 HTML，图片在文章里，第一张做封面
   const [bodyHtml, setBodyHtml] = useState(initial?.body_html ?? '')
   const [richImages, setRichImages] = useState<PostImage[]>(initial?.images ?? [])
   const [richBusy, setRichBusy] = useState(false)
@@ -118,7 +118,7 @@ export default function PostForm({ userId, isAdmin, defaultCity, defaultCategory
     if (!city) return setError('请选择城市')
     if (title.trim().length < 2) return setError('标题至少 2 个字')
     if (uploading > 0 || richBusy) return setError('图片还在上传，请稍等')
-    const isNews = cat!.code === 'news'
+    const isNews = !!cat!.rich
     if (isNews && !body.trim() && !bodyHtml.trim()) return setError('请填写文章内容')
     const finalImages = isNews ? richImages.slice(0, 9) : images
 
@@ -287,7 +287,7 @@ export default function PostForm({ userId, isAdmin, defaultCity, defaultCategory
         </section>
       )}
 
-      {cat.code === 'news' ? (
+      {cat.rich ? (
         <section className="bg-white px-4 pb-4 md:rounded-xl md:border md:border-line">
           <Label>文章内容</Label>
           <RichEditor
@@ -361,7 +361,7 @@ export default function PostForm({ userId, isAdmin, defaultCity, defaultCategory
       </section>
       )}
 
-      {cat.code !== 'news' && (
+      {!cat.rich && (
       <section className="bg-white px-4 pb-4 md:rounded-xl md:border md:border-line">
         <Label>联系方式 <span className="text-mute">（所有人可见，至少留一种方便别人联系你）</span></Label>
         <div className="grid gap-2 sm:grid-cols-3">
