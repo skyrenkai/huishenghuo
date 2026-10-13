@@ -6,8 +6,8 @@ import { getCurrentUser, getSelectedCity } from '@/lib/session'
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
-  title: { default: '惠生活 · 达拉斯 休斯顿 奥斯汀华人同城信息', template: '%s - 惠生活' },
-  description: '德州华人的同城信息平台：达拉斯、休斯顿、奥斯汀的租房、招聘、二手、汽车、顺风车、本地服务，免费发布。',
+  title: { default: '惠生活 · 达拉斯华人同城信息', template: '%s - 惠生活' },
+  description: '达拉斯（DFW）华人的同城信息平台：租房、招聘、二手、汽车、顺风车、本地服务，免费发布。',
   openGraph: {
     siteName: '惠生活',
     locale: 'zh_CN',
