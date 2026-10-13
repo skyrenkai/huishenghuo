@@ -218,7 +218,7 @@ export default function PostForm({ userId, isAdmin, defaultCity, defaultCategory
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           maxLength={60}
-          placeholder="一句话说清楚，例如：Plano 2 室 1 厅出租，近 Legacy West"
+          placeholder="一句话说清楚，例如：Plano 2 室 1 厅出租，近 Legacy West（城市选达拉斯）"
           className={inputCls}
         />
 

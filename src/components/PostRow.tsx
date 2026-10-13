@@ -5,7 +5,8 @@ import { isPinned } from '@/lib/pin'
 import type { PostListItem } from '@/lib/types'
 
 // 列表里的一条：左图右文，没有图就用分类字当缩略图
-export default function PostRow({ post }: { post: PostListItem }) {
+// hidden：在标题前显示“已隐藏”标记（只有作者和管理员会看到隐藏的帖子）
+export default function PostRow({ post, hidden }: { post: PostListItem; hidden?: boolean }) {
   const cat = getCategory(post.category)
   const thumb = post.images?.[0]?.thumb
   const done = post.status === 'done'
@@ -35,6 +36,7 @@ export default function PostRow({ post }: { post: PostListItem }) {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <h3 className={`line-clamp-2 text-[15px] font-medium leading-snug ${done ? 'text-mute' : 'text-ink'}`}>
+          {hidden && <span className="mr-1 rounded bg-price/10 px-1 py-px align-[1px] text-[11px] text-price">已隐藏</span>}
           {isPinned(post.pinned_until) && <span className="mr-1 rounded bg-seal px-1 py-px align-[1px] text-[11px] text-white">置顶</span>}
           {post.title}
         </h3>

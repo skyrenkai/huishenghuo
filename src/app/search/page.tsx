@@ -36,6 +36,7 @@ export default async function SearchPage({ searchParams }: { searchParams: SP })
           <Feed
             posts={result.posts}
             hasMore={result.hasMore}
+            error={result.error}
             page={page}
             pageHref={(p) => `/search?q=${encodeURIComponent(q)}&page=${p}`}
             emptyText="没有找到相关信息，换个关键词试试"

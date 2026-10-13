@@ -12,7 +12,7 @@ export default async function HomePage({ searchParams }: { searchParams: SP }) {
   const city = await getSelectedCity()
   const sort = sp.sort === 'hot' ? 'hot' : 'new'
   const page = Number(sp.page) || 1
-  const { posts, hasMore } = await fetchFeed({ city, sort, page })
+  const { posts, hasMore, error } = await fetchFeed({ city, sort, page })
 
   const href = (s: string, p = 1) => {
     const q = new URLSearchParams()
@@ -36,6 +36,7 @@ export default async function HomePage({ searchParams }: { searchParams: SP }) {
         posts={posts}
         hasMore={hasMore}
         page={page}
+        error={error}
         pageHref={(p) => href(sort, p)}
         emptyText={city ? `${cityName(city)}还没有人发布信息，来发第一条吧` : '还没有人发布信息，来发第一条吧'}
         emptyAction={{ href: '/post/new', label: '发布信息' }}

@@ -10,9 +10,19 @@ type Props = {
   pageHref: (page: number) => string
   emptyText?: string
   emptyAction?: { href: string; label: string }
+  error?: string
 }
 
-export default function Feed({ posts, hasMore, page, pageHref, emptyText, emptyAction }: Props) {
+export default function Feed({ posts, hasMore, page, pageHref, emptyText, emptyAction, error }: Props) {
+  // 数据库查询出错时直接显示原因，方便排查（比如数据库还没执行最新的 SQL）
+  if (error) {
+    return (
+      <div className="bg-white px-6 py-12 text-center">
+        <p className="font-medium text-price">信息加载失败</p>
+        <p className="mt-2 break-words text-xs text-mute">{error}</p>
+      </div>
+    )
+  }
   if (posts.length === 0) {
     return (
       <div className="bg-white px-6 py-16 text-center">

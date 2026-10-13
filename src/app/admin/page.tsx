@@ -6,6 +6,7 @@ import { getCurrentUser } from '@/lib/session'
 import { timeAgo } from '@/lib/format'
 import { getCategory, cityName } from '@/lib/categories'
 import { AdminButton } from './AdminButton'
+import { displayEmail } from '@/lib/wechat'
 import PinControl from '@/components/PinControl'
 import { formatDate, isPinned } from '@/lib/pin'
 
@@ -20,8 +21,8 @@ type ReportRow = {
   post: { id: number; title: string; is_hidden: boolean } | null
   reporter: { name: string } | null
 }
-type PostRowA = { id: number; title: string; category: string; city: string; is_hidden: boolean; pinned_until: string | null; created_at: string; author: { name: string } | null }
-type UserRow = { id: string; name: string; is_admin: boolean; is_banned: boolean; created_at: string }
+type PostRowA = { id: number; author_id: string; title: string; category: string; city: string; is_hidden: boolean; pinned_until: string | null; created_at: string; author: { name: string } | null }
+type UserRow = { id: string; name: string; email: string | null; is_admin: boolean; is_banned: boolean; created_at: string; post_count: number }
 
 export default async function AdminPage({ searchParams }: { searchParams: SP }) {
   const me = await getCurrentUser()
@@ -54,7 +55,7 @@ export default async function AdminPage({ searchParams }: { searchParams: SP }) 
   } else if (tab === 'posts') {
     let query = supabase
       .from('posts')
-      .select('id, title, category, city, is_hidden, pinned_until, created_at, author:profiles(name)')
+      .select('id, author_id, title, category, city, is_hidden, pinned_until, created_at, author:profiles(name)')
       .order('created_at', { ascending: false })
       .limit(100)
     if (q) query = query.ilike('title', `%${q.replace(/[%_\\]/g, (m) => `\\${m}`)}%`)
@@ -87,7 +88,7 @@ export default async function AdminPage({ searchParams }: { searchParams: SP }) 
         {tab !== 'reports' && (
           <form className="flex gap-2 border-b border-line px-4 py-2">
             <input type="hidden" name="tab" value={tab} />
-            <input name="q" defaultValue={q} placeholder={tab === 'posts' ? '搜索标题' : '搜索昵称'} className="h-9 flex-1 rounded-lg bg-paper px-3 text-base outline-none" />
+            <input name="q" defaultValue={q} placeholder={tab === 'posts' ? '搜索标题' : '搜索昵称或邮箱'} className="h-9 flex-1 rounded-lg bg-paper px-3 text-base outline-none" />
             <button className="rounded-lg bg-ink px-3 text-sm text-white">搜索</button>
           </form>
         )}
@@ -140,7 +141,7 @@ export default async function AdminPage({ searchParams }: { searchParams: SP }) 
                     {p.title}
                   </Link>
                   <p className="text-xs text-mute">
-                    {getCategory(p.category)?.name}，{cityName(p.city)}，{p.author?.name ?? '用户'}，{timeAgo(p.created_at)}
+                    {getCategory(p.category)?.name}，{cityName(p.city)}，<Link href={`/admin/users/${p.author_id}`} className="text-seal">{p.author?.name ?? '用户'}</Link>，{timeAgo(p.created_at)}
                   </p>
                 </div>
                 <PinControl postId={p.id} pinnedUntil={p.pinned_until} />
@@ -157,14 +158,17 @@ export default async function AdminPage({ searchParams }: { searchParams: SP }) 
           ) : (
             users.map((u) => (
               <div key={u.id} className="flex items-center gap-3 border-b border-line px-4 py-3 last:border-b-0">
-                <div className="min-w-0 flex-1">
+                <Link href={`/admin/users/${u.id}`} className="min-w-0 flex-1 hover:text-seal">
                   <p className="truncate font-medium">
                     {u.name}
                     {u.is_admin && <span className="ml-2 rounded bg-ink px-1 text-[11px] text-white">管理员</span>}
                     {u.is_banned && <span className="ml-2 rounded bg-price/10 px-1 text-[11px] text-price">已封</span>}
                   </p>
-                  <p className="text-xs text-mute">注册于 {timeAgo(u.created_at)}</p>
-                </div>
+                  <p className="truncate text-xs text-mute">{displayEmail(u.email) || '微信登录'}</p>
+                  <p className="text-xs text-mute">
+                    注册于 {timeAgo(u.created_at)}，发帖 {u.post_count} 条
+                  </p>
+                </Link>
                 {!u.is_admin && (
                   <AdminButton rpc={{ fn: 'admin_set_banned', args: { uid: u.id, banned: !u.is_banned } }} danger={!u.is_banned}>
                     {u.is_banned ? '解封' : '封号'}

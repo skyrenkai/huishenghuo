@@ -60,12 +60,7 @@ export default async function MePage({ searchParams }: { searchParams: SP }) {
           </p>
         ) : (
           posts.map((p) => (
-            <div key={p.id} className="relative">
-              {p.is_hidden && (
-                <span className="absolute right-3 top-2 z-10 rounded bg-price/10 px-1.5 text-[11px] text-price">已被隐藏</span>
-              )}
-              <PostRow post={p} />
-            </div>
+            <PostRow key={p.id} post={p} hidden={p.is_hidden} />
           ))
         )}
         {posts.length > 0 && (

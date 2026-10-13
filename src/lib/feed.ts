@@ -12,7 +12,9 @@ export type FeedQuery = {
   page?: number
 }
 
-export async function fetchFeed(q: FeedQuery): Promise<{ posts: PostListItem[]; hasMore: boolean }> {
+export type FeedResult = { posts: PostListItem[]; hasMore: boolean; error?: string }
+
+export async function fetchFeed(q: FeedQuery): Promise<FeedResult> {
   const supabase = await createClient()
   const page = Math.max(1, q.page || 1)
   const from = (page - 1) * PAGE_SIZE
@@ -55,7 +57,8 @@ export async function fetchFeed(q: FeedQuery): Promise<{ posts: PostListItem[]; 
   // ---------- 最新：第 1 页最上面放正在置顶的帖子（到期的自动不算） ----------
   let pinned: PostListItem[] = []
   if (page === 1) {
-    const { data } = await base().gt('pinned_until', now).order('pinned_until', { ascending: false }).limit(10)
+    const { data, error } = await base().gt('pinned_until', now).order('pinned_until', { ascending: false }).limit(10)
+    if (error) return done(null, error)
     pinned = (data ?? []) as PostListItem[]
   }
 
@@ -64,14 +67,14 @@ export async function fetchFeed(q: FeedQuery): Promise<{ posts: PostListItem[]; 
     .order('bumped_at', { ascending: false })
     .range(from, from + PAGE_SIZE)
   const rest = done(data, error)
-  return { posts: [...pinned, ...rest.posts], hasMore: rest.hasMore }
+  return { ...rest, posts: [...pinned, ...rest.posts] }
 }
 
 // 多取一条，用来判断还有没有下一页
-function done(data: unknown, error: { message: string } | null) {
+function done(data: unknown, error: { message: string } | null): FeedResult {
   if (error) {
     console.error('fetchFeed', error.message)
-    return { posts: [] as PostListItem[], hasMore: false }
+    return { posts: [], hasMore: false, error: error.message }
   }
   const rows = (data ?? []) as PostListItem[]
   return { posts: rows.slice(0, PAGE_SIZE), hasMore: rows.length > PAGE_SIZE }

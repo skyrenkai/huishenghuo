@@ -25,7 +25,7 @@ export default async function CategoryPage({ params, searchParams }: { params: P
   const sub = category.subs.includes(sp.sub || '') ? sp.sub! : ''
   const sort = sp.sort === 'hot' ? 'hot' : 'new'
   const page = Number(sp.page) || 1
-  const { posts, hasMore } = await fetchFeed({ city, category: cat, sub, sort, page })
+  const { posts, hasMore, error } = await fetchFeed({ city, category: cat, sub, sort, page })
 
   const href = (o: { sub?: string; sort?: string; page?: number }) => {
     const q = new URLSearchParams()
@@ -87,6 +87,7 @@ export default async function CategoryPage({ params, searchParams }: { params: P
         posts={posts}
         hasMore={hasMore}
         page={page}
+        error={error}
         pageHref={(p) => href({ page: p })}
         emptyText={`${sub || category.name}暂时没有信息`}
         emptyAction={category.adminOnly ? undefined : { href: `/post/new?cat=${cat}`, label: '发布第一条' }}
