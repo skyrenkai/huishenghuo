@@ -9,6 +9,7 @@ import { formatPrice, timeAgo } from '@/lib/format'
 import type { Post, PostContact } from '@/lib/types'
 import { Avatar } from '@/components/Header'
 import Gallery from './Gallery'
+import { sanitizeNewsHtml } from '@/lib/sanitize'
 import ContactBox from './ContactBox'
 import { maskEmail, maskPhone, maskWechat } from '@/lib/mask'
 import Comments from './Comments'
@@ -67,6 +68,8 @@ export default async function PostPage({ params }: { params: Params }) {
         email: c.email ? maskEmail(c.email) : undefined,
       }
     : null
+  // 本地新闻的图文内容：服务器端过滤后再显示，防止有害代码
+  const richHtml = post.category === 'news' && post.body_html ? sanitizeNewsHtml(post.body_html) : ''
   const isOwner = user?.id === post.author_id
   const isAdmin = !!user?.profile?.is_admin
   const cat = getCategory(post.category)
@@ -82,7 +85,8 @@ export default async function PostPage({ params }: { params: Params }) {
         <p className="bg-price/10 px-4 py-2 text-sm text-price">这条信息已被管理员隐藏，只有你和管理员能看到。</p>
       )}
 
-      {post.images.length > 0 && <Gallery images={post.images} />}
+      {/* 图文新闻的图片在文章里，不在顶部重复显示 */}
+      {post.images.length > 0 && !richHtml && <Gallery images={post.images} />}
 
       <div className="relative bg-white px-4 py-4 md:rounded-b-xl md:border md:border-t-0 md:border-line">
         <div className="flex flex-wrap items-center gap-2 text-xs">
@@ -121,11 +125,13 @@ export default async function PostPage({ params }: { params: Params }) {
           </dl>
         )}
 
-        {post.body && (
+        {richHtml ? (
+          <div className="news-body mt-4 text-[16px] leading-8" dangerouslySetInnerHTML={{ __html: richHtml }} />
+        ) : post.body && (
           <div className="mt-4 whitespace-pre-wrap break-words text-[15px] leading-7">{post.body}</div>
         )}
 
-        <ContactBox postId={post.id} masked={masked} />
+        {post.category !== 'news' && <ContactBox postId={post.id} masked={masked} />}
 
         <div className="mt-5 flex items-center gap-3 border-t border-line pt-4">
           <Avatar name={post.author?.name ?? '用户'} url={post.author?.avatar_url ?? null} size={36} />

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { CATEGORIES, CITIES, getCategory } from '@/lib/categories'
 import { uploadImage, deleteImages } from '@/lib/images'
+import RichEditor from './RichEditor'
 import type { Post, PostContact, PostImage } from '@/lib/types'
 
 const MAX_IMAGES = 9
@@ -35,6 +36,10 @@ export default function PostForm({ userId, isAdmin, defaultCity, defaultCategory
   const [body, setBody] = useState(initial?.body ?? '')
   const [extra, setExtra] = useState<Record<string, string>>(initial?.extra ?? {})
   const [images, setImages] = useState<PostImage[]>(initial?.images ?? [])
+  // 本地新闻用图文编辑器：内容是 HTML，图片在文章里，第一张做封面
+  const [bodyHtml, setBodyHtml] = useState(initial?.body_html ?? '')
+  const [richImages, setRichImages] = useState<PostImage[]>(initial?.images ?? [])
+  const [richBusy, setRichBusy] = useState(false)
   const [uploading, setUploading] = useState(0)
   const [phone, setPhone] = useState(initialContact?.phone ?? '')
   const [wechat, setWechat] = useState(initialContact?.wechat ?? '')
@@ -112,7 +117,10 @@ export default function PostForm({ userId, isAdmin, defaultCity, defaultCategory
     if (!sub) return setError('请选择类型')
     if (!city) return setError('请选择城市')
     if (title.trim().length < 2) return setError('标题至少 2 个字')
-    if (uploading > 0) return setError('图片还在上传，请稍等')
+    if (uploading > 0 || richBusy) return setError('图片还在上传，请稍等')
+    const isNews = cat!.code === 'news'
+    if (isNews && !body.trim() && !bodyHtml.trim()) return setError('请填写文章内容')
+    const finalImages = isNews ? richImages.slice(0, 9) : images
 
     setSaving(true)
     const supabase = createClient()
@@ -126,10 +134,11 @@ export default function PostForm({ userId, isAdmin, defaultCity, defaultCategory
       category: cat!.code,
       subcategory: sub,
       title: title.trim(),
-      body: body.trim(),
+      body: body.trim().slice(0, 5000),
+      body_html: isNews ? bodyHtml : null,
       price: cat!.priceLabel ? price.trim() || null : null,
       extra: cleanExtra,
-      images,
+      images: finalImages,
     }
 
     let postId = initial?.id
@@ -152,7 +161,7 @@ export default function PostForm({ userId, isAdmin, defaultCity, defaultCategory
 
     // 编辑时删掉的图片，从存储里也删掉
     if (editing && initial) {
-      const kept = new Set(images.map((i) => i.url))
+      const kept = new Set(finalImages.map((i) => i.url))
       const removed = initial.images.filter((i) => !kept.has(i.url))
       if (removed.length) await deleteImages(supabase, removed)
     }
@@ -274,6 +283,24 @@ export default function PostForm({ userId, isAdmin, defaultCity, defaultCategory
         </section>
       )}
 
+      {cat.code === 'news' ? (
+        <section className="bg-white px-4 pb-4 md:rounded-xl md:border md:border-line">
+          <Label>文章内容</Label>
+          <RichEditor
+            userId={userId}
+            initialHtml={bodyHtml || (body ? body.replace(/[&<>]/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[m]!).replace(/\n/g, '<br>') : '')}
+            onBusy={setRichBusy}
+            onChange={(html, text, imgs) => {
+              setBodyHtml(html)
+              setBody(text)
+              setRichImages(imgs)
+            }}
+          />
+          <p className="mt-2 text-xs leading-5 text-mute">
+            可以从公众号文章直接复制粘贴，图片会自动转存到本站。文章里的第一张图片会作为列表封面和分享图。
+          </p>
+        </section>
+      ) : (
       <section className="bg-white px-4 pb-4 md:rounded-xl md:border md:border-line">
         <Label htmlFor="body">详细描述</Label>
         <textarea
@@ -328,7 +355,9 @@ export default function PostForm({ userId, isAdmin, defaultCity, defaultCategory
         </div>
         <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={(e) => onPickImages(e.target.files)} />
       </section>
+      )}
 
+      {cat.code !== 'news' && (
       <section className="bg-white px-4 pb-4 md:rounded-xl md:border md:border-line">
         <Label>联系方式 <span className="text-mute">（所有人可见，至少留一种方便别人联系你）</span></Label>
         <div className="grid gap-2 sm:grid-cols-3">
@@ -337,15 +366,16 @@ export default function PostForm({ userId, isAdmin, defaultCity, defaultCategory
           <input value={email} onChange={(e) => setEmail(e.target.value)} maxLength={80} type="email" placeholder="邮箱" className={inputCls} aria-label="邮箱" />
         </div>
       </section>
+      )}
 
       <div className="safe-bottom sticky bottom-0 z-10 border-t border-line bg-white px-4 py-3 md:static md:rounded-xl md:border">
         {error && <p className="mb-2 text-sm text-price" role="alert">{error}</p>}
         <button
           type="submit"
-          disabled={saving || uploading > 0}
+          disabled={saving || uploading > 0 || richBusy}
           className="h-12 w-full rounded-xl bg-seal text-base font-semibold text-white hover:bg-seal-dark disabled:opacity-60"
         >
-          {saving ? '正在保存…' : uploading > 0 ? '图片上传中…' : editing ? '保存修改' : '发布'}
+          {saving ? '正在保存…' : uploading > 0 || richBusy ? '图片上传中…' : editing ? '保存修改' : '发布'}
         </button>
       </div>
     </form>

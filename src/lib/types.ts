@@ -17,6 +17,7 @@ export type Post = {
   subcategory: string
   title: string
   body: string
+  body_html?: string | null
   price: string | null
   extra: Record<string, string>
   images: PostImage[]
