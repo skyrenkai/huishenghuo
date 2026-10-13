@@ -1,7 +1,7 @@
 import { cache } from 'react'
 import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
-import { CITIES } from '@/lib/categories'
+import { CITIES, SINGLE_CITY } from '@/lib/categories'
 import type { Profile } from '@/lib/types'
 
 // 当前登录用户和资料（没登录返回 null）
@@ -24,6 +24,7 @@ export const getCurrentUser = cache(
 
 // 用户选的城市存在 cookie 里；'' 表示全部城市
 export async function getSelectedCity(): Promise<string> {
+  if (SINGLE_CITY) return SINGLE_CITY
   const c = (await cookies()).get('city')?.value || ''
   return CITIES.some((x) => x.code === c) ? c : ''
 }

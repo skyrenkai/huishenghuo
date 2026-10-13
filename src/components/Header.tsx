@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import CityPicker from './CityPicker'
+import { SINGLE_CITY } from '@/lib/categories'
 
 type Props = {
   city: string
@@ -16,7 +17,7 @@ export default function Header({ city, user }: Props) {
           <span className="text-lg font-bold tracking-wide">惠生活</span>
         </Link>
 
-        <CityPicker current={city} />
+        {!SINGLE_CITY && <CityPicker current={city} />}
 
         <div className="ml-auto flex items-center gap-2">
           <Link href="/search" aria-label="搜索" className="rounded-full p-2 text-ink-soft hover:bg-paper">

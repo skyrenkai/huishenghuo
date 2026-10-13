@@ -3,7 +3,7 @@
 import { useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { CATEGORIES, CITIES, getCategory } from '@/lib/categories'
+import { CATEGORIES, CITIES, SINGLE_CITY, getCategory } from '@/lib/categories'
 import { uploadImage, deleteImages } from '@/lib/images'
 import RichEditor from './RichEditor'
 import type { Post, PostContact, PostImage } from '@/lib/types'
@@ -30,7 +30,7 @@ export default function PostForm({ userId, isAdmin, defaultCity, defaultCategory
   const [category, setCategory] = useState(initial?.category ?? (getCategory(defaultCategory) ? defaultCategory! : ''))
   const cat = getCategory(category)
   const [sub, setSub] = useState(initial?.subcategory ?? '')
-  const [city, setCity] = useState(initial?.city ?? defaultCity)
+  const [city, setCity] = useState(SINGLE_CITY || initial?.city || defaultCity)
   const [title, setTitle] = useState(initial?.title ?? '')
   const [price, setPrice] = useState(initial?.price ?? '')
   const [body, setBody] = useState(initial?.body ?? '')
@@ -211,15 +211,19 @@ export default function PostForm({ userId, isAdmin, defaultCity, defaultCategory
           ))}
         </div>
 
-        <Label htmlFor="city">城市</Label>
-        <select id="city" value={city} onChange={(e) => setCity(e.target.value)} className={inputCls}>
-          <option value="">请选择</option>
-          {CITIES.map((c) => (
-            <option key={c.code} value={c.code}>
-              {c.name}
-            </option>
-          ))}
-        </select>
+        {!SINGLE_CITY && (
+          <>
+            <Label htmlFor="city">城市</Label>
+            <select id="city" value={city} onChange={(e) => setCity(e.target.value)} className={inputCls}>
+              <option value="">请选择</option>
+              {CITIES.map((c) => (
+                <option key={c.code} value={c.code}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </>
+        )}
 
         <Label htmlFor="title">标题</Label>
         <input
@@ -227,7 +231,7 @@ export default function PostForm({ userId, isAdmin, defaultCity, defaultCategory
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           maxLength={60}
-          placeholder="一句话说清楚，例如：Plano 2 室 1 厅出租，近 Legacy West（城市选达拉斯）"
+          placeholder="一句话说清楚，例如：Plano 2 室 1 厅出租，近 Legacy West"
           className={inputCls}
         />
 

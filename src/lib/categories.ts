@@ -144,11 +144,13 @@ export function getCategory(code?: string | null): Category | undefined {
 }
 
 // 达拉斯包括整个 DFW 地区（Plano、Frisco、Richardson 等）
-export const CITIES = [
-  { code: 'dallas', name: '达拉斯 Dallas' },
-  { code: 'houston', name: '休斯顿 Houston' },
-  { code: 'austin', name: '奥斯汀 Austin' },
-]
+// 目前只做达拉斯（包括整个 DFW 地区）。以后要加城市，在这里加一行即可，城市选择会自动出现：
+//   { code: 'houston', name: '休斯顿 Houston' },
+//   { code: 'austin', name: '奥斯汀 Austin' },
+export const CITIES = [{ code: 'dallas', name: '达拉斯 Dallas' }]
+
+// 只有一个城市时，不显示城市选择
+export const SINGLE_CITY = CITIES.length === 1 ? CITIES[0].code : ''
 
 export function cityName(code?: string | null): string {
   const c = CITIES.find((x) => x.code === code)

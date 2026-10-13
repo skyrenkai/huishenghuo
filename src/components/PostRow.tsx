@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { getCategory, cityName } from '@/lib/categories'
+import { getCategory, cityName, SINGLE_CITY } from '@/lib/categories'
 import { formatPrice, timeAgo } from '@/lib/format'
 import { isPinned } from '@/lib/pin'
 import type { PostListItem } from '@/lib/types'
@@ -43,7 +43,7 @@ export default function PostRow({ post, hidden }: { post: PostListItem; hidden?:
         <div className="mt-auto flex items-end justify-between gap-2 pt-1">
           <p className="flex min-w-0 gap-2 truncate text-xs text-mute">
             <span>{post.subcategory}</span>
-            {post.city && <span>{cityName(post.city)}</span>}
+            {post.city && !SINGLE_CITY && <span>{cityName(post.city)}</span>}
             <span>{timeAgo(post.bumped_at)}</span>
             {post.comment_count > 0 && <span>{post.comment_count} 评论</span>}
           </p>
