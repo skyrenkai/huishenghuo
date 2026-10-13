@@ -76,6 +76,11 @@ export default async function MePage({ searchParams }: { searchParams: SP }) {
       <div className="px-4 py-2 md:px-0">
         <SignOutButton />
       </div>
+      <p className="pb-4 text-center text-xs text-mute">
+        <Link href="/terms" className="underline">服务条款</Link>
+        <span className="mx-2">|</span>
+        <Link href="/privacy" className="underline">隐私政策</Link>
+      </p>
     </div>
   )
 }

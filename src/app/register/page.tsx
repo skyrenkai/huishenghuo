@@ -131,14 +131,14 @@ function RegisterForm() {
           <form onSubmit={onVerify} className="mt-6 space-y-4">
             {notice && <p className="text-sm text-ink-soft">{notice}</p>}
             <input
-              type="text" inputMode="numeric" autoComplete="one-time-code" maxLength={6}
+              type="text" inputMode="numeric" autoComplete="one-time-code" maxLength={8}
               required value={code}
               onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
-              placeholder="6 位验证码"
-              className={`${inputCls} text-center text-2xl tracking-[0.5em]`}
+              placeholder="邮件里的验证码"
+              className={`${inputCls} text-center text-2xl tracking-[0.35em]`}
             />
             {error && <p className="text-sm text-seal">{error}</p>}
-            <button type="submit" disabled={loading || code.length !== 6}
+            <button type="submit" disabled={loading || code.length < 6}
               className="h-11 w-full rounded-lg bg-seal text-base font-medium text-white active:bg-seal-dark disabled:opacity-60">
               {loading ? '验证中…' : '完成注册'}
             </button>
@@ -153,6 +153,11 @@ function RegisterForm() {
         <p className="mt-6 text-center text-sm text-mute">
           已有账号？
           <Link href={`/login?next=${encodeURIComponent(next)}`} className="text-seal">去登录</Link>
+        </p>
+        <p className="mt-3 text-center text-xs text-mute">
+          注册即表示同意
+          <Link href="/terms" className="mx-0.5 underline">服务条款</Link>和
+          <Link href="/privacy" className="mx-0.5 underline">隐私政策</Link>
         </p>
       </div>
     </div>
