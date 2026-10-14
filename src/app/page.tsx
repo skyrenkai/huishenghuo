@@ -15,11 +15,21 @@ export default async function HomePage() {
   const city = await getSelectedCity()
   const supabase = await createClient()
 
-  const latest = (code: string) => {
+  const now = new Date().toISOString()
+  const base = (code: string) => {
     let q = supabase.from('posts').select(POST_LIST_FIELDS).eq('is_hidden', false).eq('category', code)
     if (city) q = q.eq('city', city)
-    return q.order('bumped_at', { ascending: false }).limit(PER_SECTION)
+    return q
   }
+  // 每个板块：正在置顶的排最前面（到期自动不算），再接最新的
+  const latest = (code: string) =>
+    Promise.all([
+      base(code).gt('pinned_until', now).order('pinned_until', { ascending: false }).limit(PER_SECTION),
+      base(code)
+        .or(`pinned_until.is.null,pinned_until.lte.${now}`)
+        .order('bumped_at', { ascending: false })
+        .limit(PER_SECTION),
+    ])
 
   const codes = SECTIONS
   // 所有板块同时查询，不用排队等
@@ -37,9 +47,10 @@ export default async function HomePage() {
   ])
 
   const sections: SectionData[] = codes.map((code, i) => {
-    const r = sectionRes[i]
-    if (r.error) console.error('home section', code, r.error.message)
-    return { code, posts: (r.data ?? []) as PostListItem[] }
+    const [pin, rest] = sectionRes[i] as Awaited<ReturnType<typeof latest>>
+    if (pin.error || rest.error) console.error('home section', code, (pin.error ?? rest.error)?.message)
+    const posts = [...((pin.data ?? []) as PostListItem[]), ...((rest.data ?? []) as PostListItem[])]
+    return { code, posts: posts.slice(0, PER_SECTION) }
   })
 
   return (

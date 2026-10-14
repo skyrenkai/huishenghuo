@@ -101,7 +101,7 @@ export const CATEGORIES: Category[] = [
     name: '本地服务',
     glyph: '服',
     color: '#0f6e8a',
-    subs: ['装修维修', '搬家', '家政保洁', '接送机', '美容美发', '法律财税', '教育培训', '保险', '会计', '其他'],
+    subs: ['装修维修', '搬家', '家政保洁', '接送机', '美容美发', '法律财税', '教育培训', '保险', '会计', '地产中介', '贷款', '其他'],
     priceLabel: '收费',
     fields: [{ key: 'area', label: '服务范围', type: 'text', placeholder: '例如：整个 DFW' }],
   },

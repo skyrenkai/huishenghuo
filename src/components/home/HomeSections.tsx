@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { getCategory } from '@/lib/categories'
 import { formatPrice, timeAgo } from '@/lib/format'
 import type { PostListItem } from '@/lib/types'
+import { isPinned } from '@/lib/pin'
 
 // 首页分区：吃喝玩乐、本地新闻、招聘求职、房屋租售……每个板块一张卡片
 
@@ -71,7 +72,10 @@ function FunSection({ posts }: { posts: PostListItem[] }) {
                   <Glyph code="fun" />
                 )}
               </div>
-              <p className="mt-1.5 line-clamp-2 text-sm font-medium leading-snug group-hover:text-seal">{p.title}</p>
+              <p className="mt-1.5 line-clamp-2 text-sm font-medium leading-snug group-hover:text-seal">
+                {isPinned(p.pinned_until) && <Pin />}
+                {p.title}
+              </p>
               <p className="mt-0.5 text-xs text-mute">{p.subcategory}</p>
             </Link>
           ))}
@@ -99,7 +103,10 @@ function NewsSection({ posts }: { posts: PostListItem[] }) {
                 <Glyph code="news" />
               )}
             </div>
-            <p className="mt-2 line-clamp-2 text-[16px] font-semibold leading-snug group-hover:text-seal">{head.title}</p>
+            <p className="mt-2 line-clamp-2 text-[16px] font-semibold leading-snug group-hover:text-seal">
+              {isPinned(head.pinned_until) && <Pin />}
+              {head.title}
+            </p>
             <p className="mt-0.5 text-xs text-mute">{timeAgo(head.created_at)}</p>
           </Link>
           <ul className="divide-y divide-line">
@@ -107,7 +114,10 @@ function NewsSection({ posts }: { posts: PostListItem[] }) {
               <li key={p.id}>
                 <Link href={`/post/${p.id}`} prefetch={false} className="flex items-baseline gap-2 py-2.5 hover:text-seal">
                   <span className="h-1.5 w-1.5 shrink-0 translate-y-[-2px] rounded-full bg-seal" aria-hidden />
-                  <span className="line-clamp-1 flex-1 text-[15px]">{p.title}</span>
+                  <span className="line-clamp-1 flex-1 text-[15px]">
+                    {isPinned(p.pinned_until) && <Pin />}
+                    {p.title}
+                  </span>
                   <span className="shrink-0 text-xs text-mute">{timeAgo(p.created_at)}</span>
                 </Link>
               </li>
@@ -130,7 +140,11 @@ function ListSection({ code, posts }: { code: string; posts: PostListItem[] }) {
           {posts.slice(0, 5).map((p) => (
             <li key={p.id}>
               <Link href={`/post/${p.id}`} prefetch={false} className="flex items-center gap-2 py-2.5 hover:text-seal">
-                <span className="shrink-0 rounded bg-paper px-1.5 py-0.5 text-[11px] text-ink-soft">{p.subcategory}</span>
+                {isPinned(p.pinned_until) ? (
+                  <span className="shrink-0 rounded bg-seal px-1.5 py-0.5 text-[11px] text-white">置顶</span>
+                ) : (
+                  <span className="shrink-0 rounded bg-paper px-1.5 py-0.5 text-[11px] text-ink-soft">{p.subcategory}</span>
+                )}
                 <span className="line-clamp-1 flex-1 text-[15px]">{p.title}</span>
                 {p.price && <span className="shrink-0 text-sm font-semibold text-price">{formatPrice(p.price)}</span>}
               </Link>
@@ -149,6 +163,10 @@ function Glyph({ code }: { code: string }) {
       {c?.glyph}
     </span>
   )
+}
+
+function Pin() {
+  return <span className="mr-1 rounded bg-seal px-1 py-px align-[1px] text-[11px] font-normal text-white">置顶</span>
 }
 
 function Empty() {
