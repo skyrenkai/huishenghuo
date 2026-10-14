@@ -5,7 +5,7 @@ import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser } from '@/lib/session'
 import { getCategory, cityName } from '@/lib/categories'
-import { formatPrice, timeAgo } from '@/lib/format'
+import { displayViews, formatPrice, timeAgo } from '@/lib/format'
 import type { Post, PostContact } from '@/lib/types'
 import { Avatar } from '@/components/Header'
 import Gallery from './Gallery'
@@ -110,7 +110,7 @@ export default async function PostPage({ params }: { params: Params }) {
         )}
 
         <p className="mt-2 text-xs text-mute">
-          发布于 {timeAgo(post.created_at)}，{post.view_count} 次浏览
+          发布于 {timeAgo(post.created_at)}，{displayViews(post.view_count)} 次浏览
         </p>
 
         {extras.length > 0 && (
