@@ -7,6 +7,7 @@ export type FieldDef = {
   placeholder?: string
   options?: string[]
   suffix?: string
+  wide?: boolean // 占满一整行（例如地址），可以填长一些
 }
 
 export type Category = {
@@ -19,6 +20,8 @@ export type Category = {
   priceLabel?: string // 价格框的名字；没有就不显示价格框
   adminOnly?: boolean // 只有管理员能发
   rich?: boolean // 图文文章：用富文本编辑器，可直接粘贴公众号文章；不显示联系方式
+  contactFields?: FieldDef[] // 放在"联系方式"里的专属字段（例如地址、联系人）；wide 的排在电话前面，其他排在后面
+  imagesFirst?: boolean // 发布页先放图片、再放详细描述
 }
 
 export const CATEGORIES: Category[] = [
@@ -102,8 +105,13 @@ export const CATEGORIES: Category[] = [
     glyph: '服',
     color: '#0f6e8a',
     subs: ['装修维修', '搬家', '家政保洁', '接送机', '美容美发', '法律财税', '教育培训', '保险', '会计', '地产中介', '贷款', '其他'],
-    priceLabel: '收费',
+    // 本地服务的发布顺序：标题、服务范围、图片、详细描述、地址、电话、微信、邮箱、联系人（不填收费）
     fields: [{ key: 'area', label: '服务范围', type: 'text', placeholder: '例如：整个 DFW' }],
+    contactFields: [
+      { key: 'address', label: '地址', type: 'text', placeholder: '例如：7709 San Jacinto Pl, Suite 206, Plano, TX 75024', wide: true },
+      { key: 'contact_name', label: '联系人', type: 'text', placeholder: '例如：王先生' },
+    ],
+    imagesFirst: true,
   },
   {
     code: 'help',

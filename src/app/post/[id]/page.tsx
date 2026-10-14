@@ -74,8 +74,8 @@ export default async function PostPage({ params }: { params: Params }) {
   const isOwner = user?.id === post.author_id
   const isAdmin = !!user?.profile?.is_admin
   const cat = getCategory(post.category)
-  const extras = (cat?.fields ?? [])
-    .map((f) => ({ label: f.label, value: post.extra?.[f.key], suffix: f.suffix }))
+  const extras = [...(cat?.fields ?? []), ...(cat?.contactFields ?? [])]
+    .map((f) => ({ label: f.label, value: post.extra?.[f.key], suffix: f.suffix, wide: f.wide }))
     .filter((x) => x.value)
 
   return (
@@ -116,7 +116,7 @@ export default async function PostPage({ params }: { params: Params }) {
         {extras.length > 0 && (
           <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 rounded-lg bg-paper p-3 text-sm">
             {extras.map((x) => (
-              <div key={x.label} className="flex gap-2">
+              <div key={x.label} className={`flex gap-2 ${x.wide ? 'col-span-2' : ''}`}>
                 <dt className="shrink-0 text-mute">{x.label}</dt>
                 <dd className="min-w-0 break-words">
                   {x.value}

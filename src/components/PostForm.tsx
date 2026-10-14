@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { CATEGORIES, CITIES, SINGLE_CITY, getCategory } from '@/lib/categories'
 import { uploadImage, deleteImages } from '@/lib/images'
 import RichEditor from './RichEditor'
+import type { FieldDef } from '@/lib/categories'
 import type { Post, PostContact, PostImage } from '@/lib/types'
 
 const MAX_IMAGES = 9
@@ -127,7 +128,7 @@ export default function PostForm({ userId, isAdmin, defaultCity, defaultCategory
     const cleanExtra = Object.fromEntries(
       Object.entries(extra)
         .map(([k, v]) => [k, String(v).trim()])
-        .filter(([k, v]) => v && cat!.fields.some((f) => f.key === k))
+        .filter(([k, v]) => v && [...cat!.fields, ...(cat!.contactFields ?? [])].some((f) => f.key === k))
     )
     const row = {
       city,
@@ -178,6 +179,67 @@ export default function PostForm({ userId, isAdmin, defaultCity, defaultCategory
   }
 
   // ---------- 第二步：填写内容 ----------
+  const descBlock = (
+    <>
+        <Label htmlFor="body">详细描述</Label>
+        <textarea
+          id="body"
+          value={body}
+          onChange={(e) => setBody(e.target.value)}
+          maxLength={5000}
+          rows={6}
+          placeholder="写清楚情况、要求、注意事项，信息越完整越容易成交"
+          className="w-full rounded-lg border border-line p-3 text-base leading-7 outline-none focus:border-seal"
+        />
+        <p className="mt-1 text-right text-xs text-mute">{body.length} / 5000</p>
+    </>
+  )
+  const imagesBlock = (
+    <>
+        <Label>
+          图片 <span className="text-mute">（最多 {MAX_IMAGES} 张，第一张是封面，会自动压缩）</span>
+        </Label>
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+          {images.map((img, i) => (
+            <div key={img.url} className="relative aspect-square overflow-hidden rounded-lg bg-paper">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={img.thumb} alt="" className="h-full w-full object-cover" />
+              {i === 0 && <span className="absolute left-1 top-1 rounded bg-seal px-1 text-[10px] text-white">封面</span>}
+              <div className="absolute inset-x-0 bottom-0 flex justify-between bg-black/45 text-white">
+                <button type="button" aria-label="往前移" disabled={i === 0} onClick={() => moveImage(i, -1)} className="px-2 py-0.5 disabled:opacity-30">‹</button>
+                <button
+                  type="button"
+                  aria-label="删除这张"
+                  onClick={() => setImages(images.filter((_, j) => j !== i))}
+                  className="px-2 py-0.5 text-xs"
+                >
+                  删除
+                </button>
+                <button type="button" aria-label="往后移" disabled={i === images.length - 1} onClick={() => moveImage(i, 1)} className="px-2 py-0.5 disabled:opacity-30">›</button>
+              </div>
+            </div>
+          ))}
+          {Array.from({ length: uploading }).map((_, i) => (
+            <div key={`up-${i}`} className="flex aspect-square animate-pulse items-center justify-center rounded-lg bg-paper text-xs text-mute">
+              上传中
+            </div>
+          ))}
+          {images.length + uploading < MAX_IMAGES && (
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              className="flex aspect-square flex-col items-center justify-center rounded-lg border-2 border-dashed border-line text-mute hover:border-seal hover:text-seal"
+            >
+              <span className="text-3xl leading-none">+</span>
+              <span className="mt-1 text-xs">添加图片</span>
+            </button>
+          )}
+        </div>
+        <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={(e) => onPickImages(e.target.files)} />
+    </>
+  )
+  const contactFields = cat.contactFields ?? []
+
   return (
     <form onSubmit={submit} className="space-y-2 md:mt-4 md:space-y-4">
       <section className="bg-white px-4 py-4 md:rounded-xl md:border md:border-line">
@@ -253,36 +315,7 @@ export default function PostForm({ userId, isAdmin, defaultCity, defaultCategory
       {cat.fields.length > 0 && (
         <section className="grid grid-cols-1 gap-x-4 bg-white px-4 pb-4 sm:grid-cols-2 md:rounded-xl md:border md:border-line">
           {cat.fields.map((f) => (
-            <div key={f.key}>
-              <Label htmlFor={`f-${f.key}`}>
-                {f.label}
-                {f.suffix && <span className="ml-1 text-mute">（{f.suffix}）</span>}
-              </Label>
-              {f.type === 'select' ? (
-                <select
-                  id={`f-${f.key}`}
-                  value={extra[f.key] ?? ''}
-                  onChange={(e) => setExtra({ ...extra, [f.key]: e.target.value })}
-                  className={inputCls}
-                >
-                  <option value="">不填</option>
-                  {f.options!.map((o) => (
-                    <option key={o}>{o}</option>
-                  ))}
-                </select>
-              ) : (
-                <input
-                  id={`f-${f.key}`}
-                  type={f.type === 'number' ? 'number' : 'text'}
-                  inputMode={f.type === 'number' ? 'numeric' : undefined}
-                  value={extra[f.key] ?? ''}
-                  onChange={(e) => setExtra({ ...extra, [f.key]: e.target.value })}
-                  placeholder={f.placeholder}
-                  maxLength={60}
-                  className={inputCls}
-                />
-              )}
-            </div>
+            <FieldInput key={f.key} f={f} value={extra[f.key] ?? ''} onChange={(v) => setExtra({ ...extra, [f.key]: v })} />
           ))}
         </section>
       )}
@@ -306,69 +339,39 @@ export default function PostForm({ userId, isAdmin, defaultCity, defaultCategory
         </section>
       ) : (
       <section className="bg-white px-4 pb-4 md:rounded-xl md:border md:border-line">
-        <Label htmlFor="body">详细描述</Label>
-        <textarea
-          id="body"
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-          maxLength={5000}
-          rows={6}
-          placeholder="写清楚情况、要求、注意事项，信息越完整越容易成交"
-          className="w-full rounded-lg border border-line p-3 text-base leading-7 outline-none focus:border-seal"
-        />
-        <p className="mt-1 text-right text-xs text-mute">{body.length} / 5000</p>
-
-        <Label>
-          图片 <span className="text-mute">（最多 {MAX_IMAGES} 张，第一张是封面，会自动压缩）</span>
-        </Label>
-        <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
-          {images.map((img, i) => (
-            <div key={img.url} className="relative aspect-square overflow-hidden rounded-lg bg-paper">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={img.thumb} alt="" className="h-full w-full object-cover" />
-              {i === 0 && <span className="absolute left-1 top-1 rounded bg-seal px-1 text-[10px] text-white">封面</span>}
-              <div className="absolute inset-x-0 bottom-0 flex justify-between bg-black/45 text-white">
-                <button type="button" aria-label="往前移" disabled={i === 0} onClick={() => moveImage(i, -1)} className="px-2 py-0.5 disabled:opacity-30">‹</button>
-                <button
-                  type="button"
-                  aria-label="删除这张"
-                  onClick={() => setImages(images.filter((_, j) => j !== i))}
-                  className="px-2 py-0.5 text-xs"
-                >
-                  删除
-                </button>
-                <button type="button" aria-label="往后移" disabled={i === images.length - 1} onClick={() => moveImage(i, 1)} className="px-2 py-0.5 disabled:opacity-30">›</button>
-              </div>
-            </div>
-          ))}
-          {Array.from({ length: uploading }).map((_, i) => (
-            <div key={`up-${i}`} className="flex aspect-square animate-pulse items-center justify-center rounded-lg bg-paper text-xs text-mute">
-              上传中
-            </div>
-          ))}
-          {images.length + uploading < MAX_IMAGES && (
-            <button
-              type="button"
-              onClick={() => fileRef.current?.click()}
-              className="flex aspect-square flex-col items-center justify-center rounded-lg border-2 border-dashed border-line text-mute hover:border-seal hover:text-seal"
-            >
-              <span className="text-3xl leading-none">+</span>
-              <span className="mt-1 text-xs">添加图片</span>
-            </button>
-          )}
-        </div>
-        <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={(e) => onPickImages(e.target.files)} />
+        {cat.imagesFirst ? (
+          <>
+            {imagesBlock}
+            {descBlock}
+          </>
+        ) : (
+          <>
+            {descBlock}
+            {imagesBlock}
+          </>
+        )}
       </section>
       )}
 
       {!cat.rich && (
       <section className="bg-white px-4 pb-4 md:rounded-xl md:border md:border-line">
         <Label>联系方式 <span className="text-mute">（所有人可见，至少留一种方便别人联系你）</span></Label>
+        {contactFields.filter((f) => f.wide).map((f) => (
+          <FieldInput key={f.key} f={f} value={extra[f.key] ?? ''} onChange={(v) => setExtra({ ...extra, [f.key]: v })} />
+        ))}
+        {contactFields.some((f) => f.wide) && <Label>电话 / 微信 / 邮箱</Label>}
         <div className="grid gap-2 sm:grid-cols-3">
           <input value={phone} onChange={(e) => setPhone(e.target.value)} maxLength={30} inputMode="tel" placeholder="电话" className={inputCls} aria-label="电话" />
           <input value={wechat} onChange={(e) => setWechat(e.target.value)} maxLength={40} placeholder="微信号" className={inputCls} aria-label="微信号" />
           <input value={email} onChange={(e) => setEmail(e.target.value)} maxLength={80} type="email" placeholder="邮箱" className={inputCls} aria-label="邮箱" />
         </div>
+        {contactFields.some((f) => !f.wide) && (
+          <div className="grid gap-x-4 sm:grid-cols-2">
+            {contactFields.filter((f) => !f.wide).map((f) => (
+              <FieldInput key={f.key} f={f} value={extra[f.key] ?? ''} onChange={(v) => setExtra({ ...extra, [f.key]: v })} />
+            ))}
+          </div>
+        )}
       </section>
       )}
 
@@ -391,5 +394,36 @@ function Label({ children, htmlFor }: { children: React.ReactNode; htmlFor?: str
     <label htmlFor={htmlFor} className="mb-1.5 mt-4 block text-sm font-medium text-ink-soft">
       {children}
     </label>
+  )
+}
+
+// 分类专属字段的输入框（文本、数字或下拉）
+function FieldInput({ f, value, onChange }: { f: FieldDef; value: string; onChange: (v: string) => void }) {
+  return (
+    <div className={f.wide ? 'sm:col-span-2' : undefined}>
+      <Label htmlFor={`f-${f.key}`}>
+        {f.label}
+        {f.suffix && <span className="ml-1 text-mute">（{f.suffix}）</span>}
+      </Label>
+      {f.type === 'select' ? (
+        <select id={`f-${f.key}`} value={value} onChange={(e) => onChange(e.target.value)} className={inputCls}>
+          <option value="">不填</option>
+          {f.options!.map((o) => (
+            <option key={o}>{o}</option>
+          ))}
+        </select>
+      ) : (
+        <input
+          id={`f-${f.key}`}
+          type={f.type === 'number' ? 'number' : 'text'}
+          inputMode={f.type === 'number' ? 'numeric' : undefined}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={f.placeholder}
+          maxLength={f.wide ? 150 : 60}
+          className={inputCls}
+        />
+      )}
+    </div>
   )
 }
