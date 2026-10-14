@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
-import { cache } from 'react'
+import { cache, Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser } from '@/lib/session'
 import { getCategory, cityName } from '@/lib/categories'
@@ -18,6 +18,7 @@ import ReportButton from './ReportButton'
 import ViewPing from './ViewPing'
 import WechatShareImage from '@/components/WechatShareImage'
 import ShareButton from './ShareButton'
+import RelatedPosts from './RelatedPosts'
 
 type Params = Promise<{ id: string }>
 
@@ -163,6 +164,11 @@ export default async function PostPage({ params }: { params: Params }) {
       </div>
 
       <Comments postId={post.id} currentUserId={user?.id ?? null} isAdmin={isAdmin} />
+
+      {/* 同板块的其他信息：单独加载，不拖慢帖子本身的显示 */}
+      <Suspense fallback={null}>
+        <RelatedPosts postId={post.id} category={post.category} city={post.city} />
+      </Suspense>
     </article>
   )
 }
