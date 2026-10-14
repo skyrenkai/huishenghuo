@@ -6,9 +6,9 @@ import WechatShareImage from '@/components/WechatShareImage'
 import { getSelectedCity } from '@/lib/session'
 import { POST_LIST_FIELDS, type PostListItem } from '@/lib/types'
 
-// 首页板块顺序（电脑上每排两个）：吃喝玩乐|本地新闻，求职招聘|房屋租售，本地服务|二手闲置，生意转让|优惠信息
+// 首页板块顺序（电脑上每排两个）：求职招聘|房屋租售，吃喝玩乐|本地新闻，本地服务|二手闲置，生意转让|优惠信息
 // 其他板块（汽车、顺风车等）从上面的分类图标进入
-const SECTIONS = ['fun', 'news', 'job', 'house', 'service', 'used', 'biz', 'deal']
+const SECTIONS = ['job', 'house', 'fun', 'news', 'service', 'used', 'biz', 'deal']
 const PER_SECTION = 5
 
 export default async function HomePage() {
