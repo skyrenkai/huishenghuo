@@ -7,13 +7,14 @@ import { timeAgo } from '@/lib/format'
 import { getCategory, cityName } from '@/lib/categories'
 import { AdminButton } from './AdminButton'
 import BannerManager, { type AdminBanner } from './BannerManager'
+import ViewStats from './ViewStats'
 import { displayEmail } from '@/lib/wechat'
 import PinControl from '@/components/PinControl'
 import { formatDate, isPinned } from '@/lib/pin'
 
 export const metadata: Metadata = { title: '管理后台' }
 
-type SP = Promise<{ tab?: string; q?: string }>
+type SP = Promise<{ tab?: string; q?: string; days?: string }>
 
 type ReportRow = {
   id: number
@@ -31,7 +32,8 @@ export default async function AdminPage({ searchParams }: { searchParams: SP }) 
   if (!me.profile?.is_admin) redirect('/')
 
   const sp = await searchParams
-  const tab = sp.tab === 'posts' || sp.tab === 'users' || sp.tab === 'banners' ? sp.tab : 'reports'
+  const tab = ['posts', 'users', 'banners', 'stats'].includes(sp.tab || '') ? sp.tab! : 'reports'
+  const days = [7, 30, 90].includes(Number(sp.days)) ? Number(sp.days) : 30
   const q = (sp.q || '').trim()
   const supabase = await createClient()
 
@@ -93,9 +95,11 @@ export default async function AdminPage({ searchParams }: { searchParams: SP }) 
           <Tab href="/admin?tab=posts" active={tab === 'posts'}>帖子</Tab>
           <Tab href="/admin?tab=users" active={tab === 'users'}>用户</Tab>
           <Tab href="/admin?tab=banners" active={tab === 'banners'}>广告</Tab>
+          <Tab href="/admin?tab=stats" active={tab === 'stats'}>数据</Tab>
         </div>
 
         {tab === 'banners' && <BannerManager userId={me.id} banners={banners} />}
+        {tab === 'stats' && <ViewStats days={days} />}
 
         {(tab === 'posts' || tab === 'users') && (
           <form className="flex gap-2 border-b border-line px-4 py-2">
