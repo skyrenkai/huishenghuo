@@ -9,7 +9,10 @@ import { POST_LIST_FIELDS, type PostListItem } from '@/lib/types'
 // 首页板块顺序（电脑上每排两个）：求职招聘|房屋租售，吃喝玩乐|本地新闻，本地服务|二手闲置，生意转让|优惠信息
 // 其他板块（汽车、顺风车等）从上面的分类图标进入
 const SECTIONS = ['job', 'house', 'fun', 'news', 'service', 'used', 'biz', 'deal']
+// 每个板块显示几条：求职招聘、房屋租售多显示一些，其他 5 条
 const PER_SECTION = 5
+const SECTION_COUNT: Record<string, number> = { job: 8, house: 8 }
+const countOf = (code: string) => SECTION_COUNT[code] ?? PER_SECTION
 
 export default async function HomePage() {
   const city = await getSelectedCity()
@@ -24,11 +27,11 @@ export default async function HomePage() {
   // 每个板块：正在置顶的排最前面（到期自动不算），再接最新的
   const latest = (code: string) =>
     Promise.all([
-      base(code).gt('pinned_until', now).order('pinned_until', { ascending: false }).limit(PER_SECTION),
+      base(code).gt('pinned_until', now).order('pinned_until', { ascending: false }).limit(countOf(code)),
       base(code)
         .or(`pinned_until.is.null,pinned_until.lte.${now}`)
         .order('bumped_at', { ascending: false })
-        .limit(PER_SECTION),
+        .limit(countOf(code)),
     ])
 
   const codes = SECTIONS
@@ -50,7 +53,7 @@ export default async function HomePage() {
     const [pin, rest] = sectionRes[i] as Awaited<ReturnType<typeof latest>>
     if (pin.error || rest.error) console.error('home section', code, (pin.error ?? rest.error)?.message)
     const posts = [...((pin.data ?? []) as PostListItem[]), ...((rest.data ?? []) as PostListItem[])]
-    return { code, posts: posts.slice(0, PER_SECTION) }
+    return { code, posts: posts.slice(0, countOf(code)) }
   })
 
   return (

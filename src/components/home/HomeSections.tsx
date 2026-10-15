@@ -137,7 +137,7 @@ function ListSection({ code, posts }: { code: string; posts: PostListItem[] }) {
         <Empty />
       ) : (
         <ul className="mt-2 divide-y divide-line px-4 pb-1">
-          {posts.slice(0, 5).map((p) => (
+          {posts.map((p) => (
             <li key={p.id}>
               <Link href={`/post/${p.id}`} prefetch={false} className="flex items-center gap-2 py-2.5 hover:text-seal">
                 {isPinned(p.pinned_until) ? (
