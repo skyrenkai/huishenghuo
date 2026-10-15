@@ -84,6 +84,11 @@ export default async function PostPage({ params }: { params: Params }) {
       <ViewPing id={post.id} />
       <WechatShareImage src={post.images[0]?.url ?? (cat ? `/og/${post.category}.png` : '/og.png')} />
 
+      {post.is_approved === false && !post.is_hidden && (
+        <p className="bg-[#fff4dc] px-4 py-2 text-sm text-[#8a5a00]">
+          这条信息正在等待管理员审核，通过后其他人才能看到。{isAdmin && '（你是管理员，可以在下方直接审核）'}
+        </p>
+      )}
       {post.is_hidden && (
         <p className="bg-price/10 px-4 py-2 text-sm text-price">这条信息已被管理员隐藏，只有你和管理员能看到。</p>
       )}
@@ -157,6 +162,7 @@ export default async function PostPage({ params }: { params: Params }) {
             isAdmin={isAdmin}
             isHidden={post.is_hidden}
             pinnedUntil={post.pinned_until}
+            isApproved={post.is_approved !== false}
           />
         )}
 

@@ -16,10 +16,11 @@ type Props = {
   isAdmin: boolean
   isHidden: boolean
   pinnedUntil: string | null
+  isApproved: boolean
 }
 
 // 作者和管理员看到的操作栏
-export default function OwnerBar({ id, status, bumpedAt, isOwner, isAdmin, isHidden, pinnedUntil }: Props) {
+export default function OwnerBar({ id, status, bumpedAt, isOwner, isAdmin, isHidden, pinnedUntil, isApproved }: Props) {
   const router = useRouter()
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState('')
@@ -86,6 +87,11 @@ export default function OwnerBar({ id, status, bumpedAt, isOwner, isAdmin, isHid
         )}
         {isAdmin && (
           <>
+            {!isApproved && (
+              <button type="button" disabled={busy} onClick={() => update({ is_approved: true }, '已审核通过，所有人都能看到了')} className={`${btn} border-seal bg-seal text-white`}>
+                审核通过
+              </button>
+            )}
             <PinControl postId={id} pinnedUntil={pinnedUntil} />
             <button type="button" disabled={busy} onClick={() => update({ is_hidden: !isHidden }, isHidden ? '已恢复显示' : '已隐藏')} className={`${btn} border-line bg-white text-ink`}>
               {isHidden ? '恢复显示' : '隐藏'}

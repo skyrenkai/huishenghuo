@@ -22,7 +22,7 @@ export async function fetchFeed(q: FeedQuery): Promise<FeedResult> {
 
   // 同样的筛选条件（城市、分类、子类）
   const base = () => {
-    let query = supabase.from('posts').select(POST_LIST_FIELDS).eq('is_hidden', false)
+    let query = supabase.from('posts').select(POST_LIST_FIELDS).eq('is_hidden', false).eq('is_approved', true)
     if (q.city) query = query.eq('city', q.city)
     if (q.category) query = query.eq('category', q.category)
     if (q.sub) query = query.eq('subcategory', q.sub)

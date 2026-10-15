@@ -38,6 +38,7 @@ export default function PostRow({ post, hidden }: { post: PostListItem; hidden?:
 
       <div className="flex min-w-0 flex-1 flex-col">
         <h3 className={`line-clamp-2 text-[15px] font-medium leading-snug ${done ? 'text-mute' : 'text-ink'}`}>
+          {post.is_approved === false && <span className="mr-1 rounded bg-[#f5a524]/15 px-1 py-px align-[1px] text-[11px] text-[#b36b00]">待审核</span>}
           {hidden && <span className="mr-1 rounded bg-price/10 px-1 py-px align-[1px] text-[11px] text-price">已隐藏</span>}
           {isPinned(post.pinned_until) && <span className="mr-1 rounded bg-seal px-1 py-px align-[1px] text-[11px] text-white">置顶</span>}
           {post.title}

@@ -13,7 +13,7 @@ export default async function RelatedPosts({ postId, category, city }: { postId:
   const supabase = await createClient()
   const now = new Date().toISOString()
   const base = () =>
-    supabase.from('posts').select(POST_LIST_FIELDS).eq('is_hidden', false).eq('category', category).eq('city', city).neq('id', postId)
+    supabase.from('posts').select(POST_LIST_FIELDS).eq('is_hidden', false).eq('is_approved', true).eq('category', category).eq('city', city).neq('id', postId)
 
   const [pin, rest] = await Promise.all([
     base().gt('pinned_until', now).order('pinned_until', { ascending: false }).limit(COUNT),
