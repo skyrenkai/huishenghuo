@@ -5,7 +5,7 @@ import { cache, Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser } from '@/lib/session'
 import { getCategory, cityName } from '@/lib/categories'
-import { displayViews, formatPrice, timeAgo } from '@/lib/format'
+import { displayViews, formatDateTime, formatPrice, timeAgo } from '@/lib/format'
 import type { Post, PostContact } from '@/lib/types'
 import { Avatar } from '@/components/Header'
 import Gallery from './Gallery'
@@ -110,8 +110,10 @@ export default async function PostPage({ params }: { params: Params }) {
           <span className="stamp-done absolute right-6 top-6 px-3 py-1 text-lg">已完成</span>
         )}
 
-        <p className="mt-2 text-xs text-mute">
-          发布于 {timeAgo(post.created_at)}，{displayViews(post.view_count)} 次浏览
+        <p className="mt-2 text-xs leading-5 text-mute">
+          发布时间 {formatDateTime(post.created_at)}（{timeAgo(post.created_at)}）
+          {post.edited_at && <span className="ml-2">更新于 {formatDateTime(post.edited_at)}</span>}
+          <span className="ml-2">{displayViews(post.view_count)} 次浏览</span>
         </p>
 
         {extras.length > 0 && (

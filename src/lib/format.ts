@@ -24,3 +24,18 @@ export const VIEW_DISPLAY_MULTIPLIER = 3
 export function displayViews(n: number): number {
   return Math.round((n || 0) * VIEW_DISPLAY_MULTIPLIER)
 }
+
+// 具体时间：2026-10-14 15:30（按达拉斯时间显示，不受服务器时区影响）
+export function formatDateTime(iso: string): string {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Chicago',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(new Date(iso))
+  const get = (t: string) => parts.find((x) => x.type === t)?.value ?? ''
+  return `${get('year')}-${get('month')}-${get('day')} ${get('hour')}:${get('minute')}`
+}

@@ -28,6 +28,7 @@ export type Post = {
   comment_count: number
   bumped_at: string
   created_at: string
+  edited_at?: string | null // 内容最后一次修改的时间（执行 9-edited-at.sql 后才有）
   author?: Pick<Profile, 'name' | 'avatar_url'> | null
 }
 
