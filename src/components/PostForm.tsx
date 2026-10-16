@@ -1,5 +1,6 @@
 'use client'
 
+import { refreshPublicCache } from '@/app/actions/revalidate'
 import { useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -167,6 +168,7 @@ export default function PostForm({ userId, isAdmin, defaultCity, defaultCategory
       if (removed.length) await deleteImages(supabase, removed)
     }
 
+    await refreshPublicCache()
     router.replace(`/post/${postId}`)
     router.refresh()
   }

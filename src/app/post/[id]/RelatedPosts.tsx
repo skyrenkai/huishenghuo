@@ -1,25 +1,41 @@
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/server'
+import { unstable_cache } from 'next/cache'
+import { createPublicClient } from '@/lib/supabase/public'
+import { LIST_CACHE_SECONDS } from '@/lib/feed'
 import { getCategory } from '@/lib/categories'
 import { POST_LIST_FIELDS, type PostListItem } from '@/lib/types'
 import PostRow from '@/components/PostRow'
 
 const COUNT = 8
 
+// 同板块的信息缓存 60 秒，同一板块的所有帖子页共用（多取一条，去掉当前这条后还够 8 条）
+const getRelated = unstable_cache(
+  async (category: string, city: string): Promise<PostListItem[]> => {
+    const supabase = createPublicClient()
+    const now = new Date().toISOString()
+    const base = () =>
+      supabase.from('posts').select(POST_LIST_FIELDS).eq('is_hidden', false).eq('is_approved', true).eq('category', category).eq('city', city)
+    const [pin, rest] = await Promise.all([
+      base().gt('pinned_until', now).order('pinned_until', { ascending: false }).limit(COUNT + 1),
+      base().or(`pinned_until.is.null,pinned_until.lte.${now}`).order('bumped_at', { ascending: false }).limit(COUNT + 1),
+    ])
+    if (pin.error || rest.error) throw new Error((pin.error ?? rest.error)!.message)
+    return [...((pin.data ?? []) as PostListItem[]), ...((rest.data ?? []) as PostListItem[])]
+  },
+  ['related-v1'],
+  { revalidate: LIST_CACHE_SECONDS, tags: ['posts'] }
+)
+
 // 帖子下面：同一板块的其他信息（正在置顶的排前面，再接最新的；不含当前这条和已隐藏的）
 export default async function RelatedPosts({ postId, category, city }: { postId: number; category: string; city: string }) {
   const cat = getCategory(category)
   if (!cat) return null
-  const supabase = await createClient()
-  const now = new Date().toISOString()
-  const base = () =>
-    supabase.from('posts').select(POST_LIST_FIELDS).eq('is_hidden', false).eq('is_approved', true).eq('category', category).eq('city', city).neq('id', postId)
-
-  const [pin, rest] = await Promise.all([
-    base().gt('pinned_until', now).order('pinned_until', { ascending: false }).limit(COUNT),
-    base().or(`pinned_until.is.null,pinned_until.lte.${now}`).order('bumped_at', { ascending: false }).limit(COUNT),
-  ])
-  const posts = [...((pin.data ?? []) as PostListItem[]), ...((rest.data ?? []) as PostListItem[])].slice(0, COUNT)
+  let posts: PostListItem[] = []
+  try {
+    posts = (await getRelated(category, city)).filter((p) => p.id !== postId).slice(0, COUNT)
+  } catch {
+    return null
+  }
   if (posts.length === 0) return null
 
   return (

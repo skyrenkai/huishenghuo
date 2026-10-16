@@ -1,5 +1,6 @@
 'use client'
 
+import { refreshPublicCache } from '@/app/actions/revalidate'
 import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -35,7 +36,7 @@ export default function BannerManager({ userId, banners }: { userId: string; ban
       const maxSort = banners.reduce((m, b) => Math.max(m, b.sort), 0)
       const { error } = await supabase.from('banners').insert({ image_url: url, sort: maxSort + 10 })
       if (error) throw new Error(error.message)
-      router.refresh()
+      refreshPublicCache().then(() => router.refresh())
     } catch (e) {
       setError(e instanceof Error ? e.message : '上传失败')
     } finally {
@@ -85,7 +86,7 @@ function BannerRow({ banner, prev, next }: { banner: AdminBanner; prev?: AdminBa
     const { error } = await createClient().from('banners').update(fields).eq('id', banner.id)
     setBusy(false)
     setMsg(error ? '失败：' + error.message : ok)
-    if (!error) router.refresh()
+    if (!error) refreshPublicCache().then(() => router.refresh())
   }
 
   async function swap(other?: AdminBanner) {
@@ -95,7 +96,7 @@ function BannerRow({ banner, prev, next }: { banner: AdminBanner; prev?: AdminBa
     await supabase.from('banners').update({ sort: other.sort }).eq('id', banner.id)
     await supabase.from('banners').update({ sort: banner.sort }).eq('id', other.id)
     setBusy(false)
-    router.refresh()
+    refreshPublicCache().then(() => router.refresh())
   }
 
   async function remove() {
@@ -110,7 +111,7 @@ function BannerRow({ banner, prev, next }: { banner: AdminBanner; prev?: AdminBa
     }
     setBusy(false)
     if (error) setMsg('删除失败：' + error.message)
-    else router.refresh()
+    else refreshPublicCache().then(() => router.refresh())
   }
 
   function save() {

@@ -1,5 +1,6 @@
 'use client'
 
+import { refreshPublicCache } from '@/app/actions/revalidate'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -22,6 +23,7 @@ export default function PinControl({ postId, pinnedUntil }: { postId: number; pi
       .eq('id', postId)
     setBusy(false)
     if (error) return setError('失败：' + error.message)
+    await refreshPublicCache()
     setOpen(false)
     router.refresh()
   }

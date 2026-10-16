@@ -1,5 +1,6 @@
 'use client'
 
+import { refreshPublicCache } from '@/app/actions/revalidate'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -45,6 +46,7 @@ export function AdminButton(props: Props) {
         }
       }
     }
+    await refreshPublicCache()
     setBusy(false)
     router.refresh()
   }

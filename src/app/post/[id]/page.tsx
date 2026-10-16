@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { cache, Suspense } from 'react'
+import { unstable_cache } from 'next/cache'
+import { createPublicClient } from '@/lib/supabase/public'
 import { createClient } from '@/lib/supabase/server'
 import { getCurrentUser } from '@/lib/session'
 import { getCategory, cityName } from '@/lib/categories'
@@ -22,20 +24,43 @@ import RelatedPosts from './RelatedPosts'
 
 type Params = Promise<{ id: string }>
 
-// 同一次请求里 generateMetadata 和页面共用一次查询
-const getPost = cache(async (id: number): Promise<Post | null> => {
+type Bundle = { post: Post; contact: PostContact | null }
+
+// 公开帖子（已审核、没隐藏）缓存 60 秒，所有访客共用；作者修改、管理员操作后会马上刷新
+const getPublicPost = unstable_cache(
+  async (id: number): Promise<Bundle | null> => {
+    const supabase = createPublicClient()
+    const [postRes, contactRes] = await Promise.all([
+      supabase.from('posts').select('*, author:profiles(name, avatar_url)').eq('id', id).maybeSingle(),
+      supabase.from('post_contacts').select('*').eq('post_id', id).maybeSingle(),
+    ])
+    if (postRes.error) throw new Error(postRes.error.message)
+    if (!postRes.data) return null
+    return { post: postRes.data as Post, contact: (contactRes.data as PostContact) ?? null }
+  },
+  ['post-v1'],
+  { revalidate: 60, tags: ['posts'] }
+)
+
+// 同一次请求里 generateMetadata 和页面共用一次查询。
+// 先查缓存；缓存里没有（待审核、已隐藏，只有作者和管理员能看）再按登录身份查数据库
+const getPost = cache(async (id: number): Promise<Bundle | null> => {
   if (!Number.isFinite(id)) return null
+  try {
+    const pub = await getPublicPost(id)
+    if (pub) return pub
+  } catch (e) {
+    console.error('post cache', e)
+  }
   const supabase = await createClient()
-  const { data } = await supabase
-    .from('posts')
-    .select('*, author:profiles(name, avatar_url)')
-    .eq('id', id)
-    .maybeSingle()
-  return (data as Post) ?? null
+  const { data } = await supabase.from('posts').select('*, author:profiles(name, avatar_url)').eq('id', id).maybeSingle()
+  if (!data) return null
+  const { data: contact } = await supabase.from('post_contacts').select('*').eq('post_id', id).maybeSingle()
+  return { post: data as Post, contact: (contact as PostContact) ?? null }
 })
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
-  const post = await getPost(Number((await params).id))
+  const post = (await getPost(Number((await params).id)))?.post
   if (!post) return { title: '信息不存在' }
   const desc = [formatPrice(post.price), cityName(post.city), post.body.slice(0, 80)].filter(Boolean).join(' ')
   const image = post.images?.[0]?.url
@@ -53,16 +78,13 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
 }
 
 export default async function PostPage({ params }: { params: Params }) {
-  const post = await getPost(Number((await params).id))
-  if (!post) notFound()
+  const bundle = await getPost(Number((await params).id))
+  if (!bundle) notFound()
+  const { post } = bundle
 
-  const supabase = await createClient()
-  const [user, { data: contact }] = await Promise.all([
-    getCurrentUser(),
-    supabase.from('post_contacts').select('*').eq('post_id', post.id).maybeSingle(),
-  ])
+  const user = await getCurrentUser()
   // 只把打码后的联系方式放进网页，完整的要点击后再取
-  const c = contact as PostContact | null
+  const c = bundle.contact
   const masked = c
     ? {
         phone: c.phone ? maskPhone(c.phone) : undefined,

@@ -1,5 +1,6 @@
 'use client'
 
+import { refreshPublicCache } from '@/app/actions/revalidate'
 import Link from 'next/link'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -34,6 +35,7 @@ export default function OwnerBar({ id, status, bumpedAt, isOwner, isAdmin, isHid
     setBusy(false)
     if (error) setMsg(error.message.includes('24') ? '24 小时内只能刷新一次' : '操作失败：' + error.message)
     else {
+      await refreshPublicCache()
       setMsg(okMsg)
       router.refresh()
     }
@@ -51,6 +53,7 @@ export default function OwnerBar({ id, status, bumpedAt, isOwner, isAdmin, isHid
       return
     }
     if (data?.images) await deleteImages(supabase, data.images as PostImage[])
+    await refreshPublicCache()
     router.replace(isOwner ? '/me' : '/')
     router.refresh()
   }
