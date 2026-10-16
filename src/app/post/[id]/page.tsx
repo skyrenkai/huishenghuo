@@ -163,7 +163,10 @@ export default async function PostPage({ params }: { params: Params }) {
           <div className="mt-4 whitespace-pre-wrap break-words text-[15px] leading-7">{post.body}</div>
         )}
 
-        {!getCategory(post.category)?.rich && <ContactBox postId={post.id} masked={masked} />}
+        {/* 图文板块一般把联系方式写在文章里；以前发的帖子留过联系方式的照样显示 */}
+        {(!getCategory(post.category)?.rich || (masked && (masked.phone || masked.wechat || masked.email))) && (
+          <ContactBox postId={post.id} masked={masked} />
+        )}
 
         <div className="mt-5 flex items-center gap-3 border-t border-line pt-4">
           <Avatar name={post.author?.name ?? '用户'} url={post.author?.avatar_url ?? null} size={36} />

@@ -136,6 +136,7 @@ export const CATEGORIES: Category[] = [
     color: '#a42720',
     subs: ['餐馆优惠', '超市特价', '其他'],
     fields: [{ key: 'until', label: '截止日期', type: 'text' }],
+    rich: true, // 和吃喝玩乐一样用图文编辑器，可以直接粘贴商家的宣传文章和图片（所有用户都能发）
   },
   {
     code: 'fun',

@@ -1,15 +1,16 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { getCurrentUser } from '@/lib/session'
 
-// 管理员粘贴公众号文章时，文章里的图片在微信服务器上，直接引用会显示"此图片来自微信公众平台"。
-// 这里由服务器代为下载图片，交给浏览器压缩后再上传到我们自己的存储。只有管理员能用。
+// 粘贴公众号文章时，文章里的图片在微信服务器上，直接引用会显示"此图片来自微信公众平台"。
+// 这里由服务器代为下载图片，交给浏览器压缩后再上传到我们自己的存储。登录且没被封号的用户才能用。
 export const dynamic = 'force-dynamic'
 
 const MAX_BYTES = 10 * 1024 * 1024
 
 export async function GET(request: NextRequest) {
   const user = await getCurrentUser()
-  if (!user?.profile?.is_admin) return NextResponse.json({ error: '只有管理员可以使用' }, { status: 403 })
+  if (!user) return NextResponse.json({ error: '请先登录' }, { status: 401 })
+  if (user.profile?.is_banned) return NextResponse.json({ error: '账号已被限制' }, { status: 403 })
 
   const raw = request.nextUrl.searchParams.get('url') || ''
   let url: URL
