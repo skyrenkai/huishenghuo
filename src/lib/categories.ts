@@ -22,6 +22,7 @@ export type Category = {
   rich?: boolean // 图文文章：用富文本编辑器，可直接粘贴公众号文章；不显示联系方式
   contactFields?: FieldDef[] // 放在"联系方式"里的专属字段（例如地址、联系人）；wide 的排在电话前面，其他排在后面
   imagesFirst?: boolean // 发布页先放图片、再放详细描述
+  noReview?: boolean // 普通用户发布不用管理员审核（要和 12-deal-no-review.sql 里的 no_review 列表一致）
 }
 
 export const CATEGORIES: Category[] = [
@@ -137,6 +138,7 @@ export const CATEGORIES: Category[] = [
     subs: ['餐馆优惠', '超市特价', '其他'],
     fields: [{ key: 'until', label: '截止日期', type: 'text' }],
     rich: true, // 和吃喝玩乐一样用图文编辑器，可以直接粘贴商家的宣传文章和图片（所有用户都能发）
+    noReview: true, // 发布后马上显示，不用审核
   },
   {
     code: 'fun',

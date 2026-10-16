@@ -379,7 +379,7 @@ export default function PostForm({ userId, isAdmin, defaultCity, defaultCategory
 
       <div className="safe-bottom sticky bottom-0 z-10 border-t border-line bg-white px-4 py-3 md:static md:rounded-xl md:border">
         {error && <p className="mb-2 text-sm text-price" role="alert">{error}</p>}
-        {!isAdmin && (
+        {!isAdmin && !cat.noReview && (
           <p className="mb-2 text-xs text-mute">
             {editing ? '修改内容后需要管理员重新审核，审核通过前别人暂时看不到。' : '发布后需要管理员审核，通过后其他人就能看到。'}
           </p>
