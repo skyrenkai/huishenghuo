@@ -355,7 +355,7 @@ export default function PostForm({ userId, isAdmin, defaultCity, defaultCategory
       </section>
       )}
 
-      {!cat.rich && (
+      {(!cat.rich || cat.contactBox) && (
       <section className="bg-white px-4 pb-4 md:rounded-xl md:border md:border-line">
         <Label>联系方式 <span className="text-mute">（所有人可见，至少留一种方便别人联系你）</span></Label>
         {contactFields.filter((f) => f.wide).map((f) => (

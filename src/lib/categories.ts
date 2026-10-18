@@ -22,6 +22,7 @@ export type Category = {
   rich?: boolean // 图文文章：用富文本编辑器，可直接粘贴公众号文章；不显示联系方式
   contactFields?: FieldDef[] // 放在"联系方式"里的专属字段（例如地址、联系人）；wide 的排在电话前面，其他排在后面
   imagesFirst?: boolean // 发布页先放图片、再放详细描述
+  contactBox?: boolean // 图文板块也显示电话、微信、邮箱等联系方式输入框
   noReview?: boolean // 普通用户发布不用管理员审核（要和 12-deal-no-review.sql 里的 no_review 列表一致）
 }
 
@@ -106,13 +107,14 @@ export const CATEGORIES: Category[] = [
     glyph: '服',
     color: '#0f6e8a',
     subs: ['装修维修', '搬家', '家政保洁', '接送机', '美容美发', '法律财税', '教育培训', '保险', '会计', '地产中介', '贷款', '医生', '牙医', '其他'],
-    // 本地服务的发布顺序：标题、服务范围、图片、详细描述、地址、电话、微信、邮箱、联系人（不填收费）
+    // 本地服务的发布顺序：标题、服务范围、图文内容（可粘贴文章和图片）、地址、电话、微信、邮箱、联系人（不填收费）
     fields: [{ key: 'area', label: '服务范围', type: 'text', placeholder: '例如：整个 DFW' }],
     contactFields: [
       { key: 'address', label: '地址', type: 'text', placeholder: '例如：7709 San Jacinto Pl, Suite 206, Plano, TX 75024', wide: true },
       { key: 'contact_name', label: '联系人', type: 'text', placeholder: '例如：王先生' },
     ],
-    imagesFirst: true,
+    rich: true, // 和优惠信息一样用图文编辑器，可以直接粘贴宣传文章和图片
+    contactBox: true, // 本地服务需要留联系方式，保留电话、微信、邮箱、地址、联系人
   },
   {
     code: 'help',
