@@ -20,7 +20,8 @@ export default async function EditPostPage({ params }: { params: Params }) {
     supabase.from('post_contacts').select('*').eq('post_id', id).maybeSingle(),
   ])
   if (!post) notFound()
-  if (post.author_id !== user.id) redirect(`/post/${id}`)
+  // 作者本人和管理员可以编辑
+  if (post.author_id !== user.id && !user.profile?.is_admin) redirect(`/post/${id}`)
 
   return (
     <PostForm

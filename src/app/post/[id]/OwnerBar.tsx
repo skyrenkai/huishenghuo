@@ -18,10 +18,11 @@ type Props = {
   isHidden: boolean
   pinnedUntil: string | null
   isApproved: boolean
+  showStatus: boolean
 }
 
 // 作者和管理员看到的操作栏
-export default function OwnerBar({ id, status, bumpedAt, isOwner, isAdmin, isHidden, pinnedUntil, isApproved }: Props) {
+export default function OwnerBar({ id, status, bumpedAt, isOwner, isAdmin, isHidden, pinnedUntil, isApproved, showStatus }: Props) {
   const router = useRouter()
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState('')
@@ -64,29 +65,33 @@ export default function OwnerBar({ id, status, bumpedAt, isOwner, isAdmin, isHid
     <div className="mt-4 rounded-lg border border-line bg-paper p-3">
       <p className="mb-2 text-xs text-mute">{isOwner ? '这是你发布的信息' : '管理员操作'}</p>
       <div className="flex flex-wrap gap-2">
+        {/* 作者和管理员都能编辑、改状态；刷新到最前只有作者能用 */}
+        <Link href={`/post/${id}/edit`} className={`${btn} border-line bg-white text-ink`}>
+          编辑
+        </Link>
+        {showStatus && (
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => {
+              if (status !== 'done' && !confirm('标记后帖子上会显示“已完成”印章，表示已经成交或结束（比如房子租出去了、东西卖掉了）。确定吗？')) return
+              update({ status: status === 'done' ? 'active' : 'done' }, status === 'done' ? '已重新上架' : '已标记为已成交')
+            }}
+            className={`${btn} border-line bg-white text-ink`}
+          >
+            {status === 'done' ? '重新上架' : '标记已成交 / 已结束'}
+          </button>
+        )}
         {isOwner && (
-          <>
-            <Link href={`/post/${id}/edit`} className={`${btn} border-line bg-white text-ink`}>
-              编辑
-            </Link>
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => update({ status: status === 'done' ? 'active' : 'done' }, status === 'done' ? '已重新上架' : '已标记为完成')}
-              className={`${btn} border-line bg-white text-ink`}
-            >
-              {status === 'done' ? '重新上架' : '标记已完成'}
-            </button>
-            <button
-              type="button"
-              disabled={busy || !canBump}
-              onClick={() => update({ bumped_at: new Date().toISOString() }, '已刷新到最前面')}
-              className={`${btn} border-line bg-white text-ink`}
-              title={canBump ? '' : '每 24 小时可以刷新一次'}
-            >
-              {canBump ? '刷新到最前' : '24 小时后可刷新'}
-            </button>
-          </>
+          <button
+            type="button"
+            disabled={busy || !canBump}
+            onClick={() => update({ bumped_at: new Date().toISOString() }, '已刷新到最前面')}
+            className={`${btn} border-line bg-white text-ink`}
+            title={canBump ? '' : '每 24 小时可以刷新一次'}
+          >
+            {canBump ? '刷新到最前' : '24 小时后可刷新'}
+          </button>
         )}
         {isAdmin && (
           <>

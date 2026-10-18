@@ -133,7 +133,7 @@ export default async function PostPage({ params }: { params: Params }) {
 
         {post.price && <p className="mt-2 text-2xl font-bold text-price">{formatPrice(post.price)}</p>}
 
-        {post.status === 'done' && (
+        {post.status === 'done' && !cat?.noStatus && (
           <span className="stamp-done absolute right-6 top-6 px-3 py-1 text-lg">已完成</span>
         )}
 
@@ -188,6 +188,7 @@ export default async function PostPage({ params }: { params: Params }) {
             isHidden={post.is_hidden}
             pinnedUntil={post.pinned_until}
             isApproved={post.is_approved !== false}
+            showStatus={!cat?.noStatus || post.status === 'done'}
           />
         )}
 
