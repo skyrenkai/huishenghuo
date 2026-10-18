@@ -23,7 +23,7 @@ export type Category = {
   contactFields?: FieldDef[] // 放在"联系方式"里的专属字段（例如地址、联系人）；wide 的排在电话前面，其他排在后面
   imagesFirst?: boolean // 发布页先放图片、再放详细描述
   contactBox?: boolean // 图文板块也显示电话、微信、邮箱等联系方式输入框
-  noReview?: boolean // 普通用户发布不用管理员审核（要和 12-deal-no-review.sql 里的 no_review 列表一致）
+  noReview?: boolean // 普通用户发布不用管理员审核（要和 13-service-no-review.sql 里的 no_review 列表一致）
 }
 
 export const CATEGORIES: Category[] = [
@@ -115,6 +115,7 @@ export const CATEGORIES: Category[] = [
     ],
     rich: true, // 和优惠信息一样用图文编辑器，可以直接粘贴宣传文章和图片
     contactBox: true, // 本地服务需要留联系方式，保留电话、微信、邮箱、地址、联系人
+    noReview: true, // 发布后马上显示，不用审核
   },
   {
     code: 'help',
