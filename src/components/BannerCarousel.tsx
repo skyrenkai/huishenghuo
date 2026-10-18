@@ -4,8 +4,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 export type Banner = { id: number; image_url: string; link_url: string | null; title: string | null }
 
-// 每张广告停留的时间（毫秒），3000 = 3 秒
-const INTERVAL = 3000
+// 每张广告停留的时间（毫秒），2000 = 2 秒
+const INTERVAL = 2000
 
 // 首页滚动广告：自动轮播，手机可左右滑动，电脑可点两边箭头
 export default function BannerCarousel({ banners }: { banners: Banner[] }) {
