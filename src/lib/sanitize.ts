@@ -25,6 +25,11 @@ export function sanitizeNewsHtml(html: string): string {
       '*': {
         color: [COLOR],
         'background-color': [COLOR],
+        background: [COLOR], // 只允许纯颜色的简写写法（不允许图片等）
+        width: [SIZE], 'max-width': [SIZE],
+        display: [/^(block|inline-block|inline)$/],
+        'border-collapse': [/^(collapse|separate)$/],
+        'border-top': [/^[\w\s#().,%-]+$/], 'border-bottom': [/^[\w\s#().,%-]+$/],
         'font-size': [SIZE],
         'font-weight': [/^(normal|bold|bolder|lighter|\d{3})$/],
         'font-style': [/^(normal|italic)$/],
