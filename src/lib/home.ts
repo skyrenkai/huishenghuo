@@ -20,6 +20,31 @@ export const getHomeData = unstable_cache(
   async (city: string): Promise<HomeData> => {
     const supabase = createPublicClient()
     const now = new Date().toISOString()
+
+    // 优先用数据库函数一次查完所有板块（15-home-sections.sql）；广告单独查一次
+    const [rpcRes, bannerOnly] = await Promise.all([
+      supabase.rpc('home_sections', { p_city: city, p_codes: SECTIONS, p_counts: SECTIONS.map(countOf) }),
+      supabase
+        .from('banners')
+        .select('id, image_url, link_url, title')
+        .eq('is_active', true)
+        .or(`ends_at.is.null,ends_at.gt.${now}`)
+        .order('sort', { ascending: true })
+        .order('id', { ascending: true })
+        .limit(10),
+    ])
+    const missingFn = rpcRes.error && (rpcRes.error.code === 'PGRST202' || /home_sections/.test(rpcRes.error.message))
+    if (!missingFn) {
+      if (rpcRes.error) throw new Error(rpcRes.error.message)
+      if (bannerOnly.error) throw new Error(bannerOnly.error.message)
+      const map = (rpcRes.data ?? {}) as Record<string, PostListItem[]>
+      return {
+        banners: (bannerOnly.data ?? []) as Banner[],
+        sections: SECTIONS.map((code) => ({ code, posts: (map[code] ?? []).slice(0, countOf(code)) })),
+      }
+    }
+
+    // 数据库函数还没建好时的旧办法：每个板块分开查
     const base = (code: string) => {
       let q = supabase.from('posts').select(POST_LIST_FIELDS).eq('is_hidden', false).eq('is_approved', true).eq('category', code)
       if (city) q = q.eq('city', city)
