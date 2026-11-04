@@ -8,6 +8,7 @@ import { getCategory, cityName } from '@/lib/categories'
 import { AdminButton } from './AdminButton'
 import BannerManager, { type AdminBanner } from './BannerManager'
 import ViewStats from './ViewStats'
+import BulkList from './BulkList'
 import { displayEmail } from '@/lib/wechat'
 import PinControl from '@/components/PinControl'
 import { formatDate, isPinned } from '@/lib/pin'
@@ -200,24 +201,29 @@ export default async function AdminPage({ searchParams }: { searchParams: SP }) 
           (posts.length === 0 ? (
             <Empty>没有帖子</Empty>
           ) : (
-            posts.map((p) => (
-              <div key={p.id} className="flex items-center gap-3 border-b border-line px-4 py-3 last:border-b-0">
-                <div className="min-w-0 flex-1">
-                  <Link href={`/post/${p.id}`} className={`block truncate ${p.is_hidden ? 'text-mute line-through' : 'font-medium'}`}>
-                    {!p.is_approved && !p.is_hidden && <span className="mr-1 text-[#b36b00]">[待审核]</span>}
-                    {isPinned(p.pinned_until) && <span className="mr-1 text-seal">[置顶至 {formatDate(p.pinned_until!)}]</span>}
-                    {p.title}
-                  </Link>
-                  <p className="text-xs text-mute">
-                    {getCategory(p.category)?.name}，{cityName(p.city)}，<Link href={`/admin/users/${p.author_id}`} className="text-seal">{p.author?.name ?? '用户'}</Link>，{timeAgo(p.created_at)}
-                  </p>
-                </div>
-                <PinControl postId={p.id} pinnedUntil={p.pinned_until} />
-                <AdminButton table="posts" id={p.id} fields={{ is_hidden: !p.is_hidden }} danger={!p.is_hidden}>
-                  {p.is_hidden ? '恢复' : '隐藏'}
-                </AdminButton>
-              </div>
-            ))
+            <BulkList
+              rows={posts.map((p) => ({
+                id: p.id,
+                content: (
+                  <div className="flex items-center gap-3 border-b border-line px-4 py-3 last:border-b-0">
+                    <div className="min-w-0 flex-1">
+                      <Link href={`/post/${p.id}`} className={`block truncate ${p.is_hidden ? 'text-mute line-through' : 'font-medium'}`}>
+                        {!p.is_approved && !p.is_hidden && <span className="mr-1 text-[#b36b00]">[待审核]</span>}
+                        {isPinned(p.pinned_until) && <span className="mr-1 text-seal">[置顶至 {formatDate(p.pinned_until!)}]</span>}
+                        {p.title}
+                      </Link>
+                      <p className="text-xs text-mute">
+                        {getCategory(p.category)?.name}，{cityName(p.city)}，<Link href={`/admin/users/${p.author_id}`} className="text-seal">{p.author?.name ?? '用户'}</Link>，{timeAgo(p.created_at)}
+                      </p>
+                    </div>
+                    <PinControl postId={p.id} pinnedUntil={p.pinned_until} />
+                    <AdminButton table="posts" id={p.id} fields={{ is_hidden: !p.is_hidden }} danger={!p.is_hidden}>
+                      {p.is_hidden ? '恢复' : '隐藏'}
+                    </AdminButton>
+                  </div>
+                ),
+              }))}
+            />
           ))}
 
         {tab === 'users' &&

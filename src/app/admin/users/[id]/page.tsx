@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import BulkList from '../../BulkList'
 import { notFound, redirect } from 'next/navigation'
 import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
@@ -103,12 +104,10 @@ export default async function AdminUserPage({ params, searchParams }: { params: 
         {posts.length === 0 ? (
           <p className="px-4 py-12 text-center text-sm text-mute">没有帖子</p>
         ) : (
-          posts.map((p) => (
-            <PostRow key={p.id} post={p} hidden={p.is_hidden} />
-          ))
+          <BulkList rows={posts.map((p) => ({ id: p.id, content: <PostRow post={p} hidden={p.is_hidden} /> }))} />
         )}
         {posts.length > 0 && (
-          <p className="border-t border-line px-4 py-2 text-xs text-mute">点开帖子可以隐藏、置顶或删除</p>
+          <p className="border-t border-line px-4 py-2 text-xs text-mute">勾选后可以批量删除或隐藏；点开帖子可以编辑、置顶</p>
         )}
       </section>
     </div>
