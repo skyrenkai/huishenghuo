@@ -48,7 +48,7 @@ export default function BannerManager({ userId, banners }: { userId: string; ban
   return (
     <div className="px-4 py-4">
       <p className="text-sm text-ink-soft">
-        首页顶部的滚动广告。建议图片比例 <b>3:1</b>（例如 1500×500），会自动压缩。可以设置点击后打开的链接和到期日期。
+        首页顶部的滚动广告。建议图片比例 <b>3:1</b>（例如 1500×500），会自动压缩。可以设置点击后打开的链接和到期日期；改完文字、链接、日期要点“保存”，点“换图片”可以直接替换图片。
       </p>
       <button
         type="button"
@@ -64,15 +64,23 @@ export default function BannerManager({ userId, banners }: { userId: string; ban
       <div className="mt-4 space-y-4">
         {banners.length === 0 && <p className="py-8 text-center text-sm text-mute">还没有广告图</p>}
         {banners.map((b, i) => (
-          <BannerRow key={b.id} banner={b} prev={banners[i - 1]} next={banners[i + 1]} />
+          <BannerRow key={b.id} userId={userId} banner={b} prev={banners[i - 1]} next={banners[i + 1]} />
         ))}
       </div>
     </div>
   )
 }
 
-function BannerRow({ banner, prev, next }: { banner: AdminBanner; prev?: AdminBanner; next?: AdminBanner }) {
+// 从图片网址算出它在存储里的路径（删除旧图用）
+function storagePath(url: string) {
+  const marker = '/object/public/post-images/'
+  const i = url.indexOf(marker)
+  return i >= 0 ? decodeURIComponent(url.slice(i + marker.length)) : null
+}
+
+function BannerRow({ userId, banner, prev, next }: { userId: string; banner: AdminBanner; prev?: AdminBanner; next?: AdminBanner }) {
   const router = useRouter()
+  const imgRef = useRef<HTMLInputElement>(null)
   const [title, setTitle] = useState(banner.title ?? '')
   const [link, setLink] = useState(banner.link_url ?? '')
   const [ends, setEnds] = useState(banner.ends_at ? banner.ends_at.slice(0, 10) : '')
@@ -104,14 +112,34 @@ function BannerRow({ banner, prev, next }: { banner: AdminBanner; prev?: AdminBa
     setBusy(true)
     const supabase = createClient()
     const { error } = await supabase.from('banners').delete().eq('id', banner.id)
-    const marker = '/object/public/post-images/'
-    const i = banner.image_url.indexOf(marker)
-    if (!error && i >= 0) {
-      await supabase.storage.from('post-images').remove([decodeURIComponent(banner.image_url.slice(i + marker.length))])
-    }
+    const old = storagePath(banner.image_url)
+    if (!error && old) await supabase.storage.from('post-images').remove([old])
     setBusy(false)
     if (error) setMsg('删除失败：' + error.message)
     else refreshPublicCache().then(() => router.refresh())
+  }
+
+  // 换一张新图片，说明、链接、到期日期、顺序都保留
+  async function replaceImage(files: FileList | null) {
+    const f = files?.[0]
+    if (imgRef.current) imgRef.current.value = ''
+    if (!f) return
+    setBusy(true)
+    setMsg('')
+    try {
+      const supabase = createClient()
+      const url = await uploadBanner(supabase, userId, f)
+      const { error } = await supabase.from('banners').update({ image_url: url }).eq('id', banner.id)
+      if (error) throw new Error(error.message)
+      const old = storagePath(banner.image_url)
+      if (old) await supabase.storage.from('post-images').remove([old])
+      setMsg('图片已更换')
+      refreshPublicCache().then(() => router.refresh())
+    } catch (e) {
+      setMsg('换图失败：' + (e instanceof Error ? e.message : '请重试'))
+    } finally {
+      setBusy(false)
+    }
   }
 
   function save() {
@@ -149,6 +177,15 @@ function BannerRow({ banner, prev, next }: { banner: AdminBanner; prev?: AdminBa
         <button type="button" disabled={busy} onClick={save} className="rounded-full bg-seal px-3 py-1 text-sm text-white disabled:opacity-50">
           保存
         </button>
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => imgRef.current?.click()}
+          className="rounded-full border border-seal px-3 py-1 text-sm text-seal disabled:opacity-50"
+        >
+          {busy ? '处理中…' : '换图片'}
+        </button>
+        <input ref={imgRef} type="file" accept="image/*" hidden onChange={(e) => replaceImage(e.target.files)} />
         <button
           type="button"
           disabled={busy}
