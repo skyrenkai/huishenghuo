@@ -32,6 +32,6 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     // 静态文件、图片、定时任务不需要
-    '/((?!_next/static|_next/image|favicon.ico|api/keepalive|.*\\.(?:png|jpg|jpeg|gif|webp|svg|ico)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|robots.txt|promo/|api/keepalive|.*\\.(?:png|jpg|jpeg|gif|webp|svg|ico)$).*)',
   ],
 }
