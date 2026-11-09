@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import Header from '@/components/Header'
 import BottomNav from '@/components/BottomNav'
-import { getCurrentUser, getSelectedCity } from '@/lib/session'
+import { getSelectedCity } from '@/lib/session'
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
@@ -23,14 +23,11 @@ export const viewport: Viewport = {
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const [user, city] = await Promise.all([getCurrentUser(), getSelectedCity()])
+  const city = await getSelectedCity()
   return (
     <html lang="zh-CN">
       <body className="min-h-screen antialiased">
-        <Header
-          city={city}
-          user={user?.profile ? { name: user.profile.name, avatar_url: user.profile.avatar_url, is_admin: user.profile.is_admin } : null}
-        />
+        <Header city={city} />
         <main className="mx-auto max-w-3xl pb-24 md:pb-10">{children}</main>
         <BottomNav />
       </body>

@@ -1,13 +1,10 @@
 import Link from '@/components/Link'
 import CityPicker from './CityPicker'
 import { SINGLE_CITY } from '@/lib/categories'
+import HeaderUser from './HeaderUser'
+export { default as Avatar } from './Avatar'
 
-type Props = {
-  city: string
-  user: { name: string; avatar_url: string | null; is_admin: boolean } | null
-}
-
-export default function Header({ city, user }: Props) {
+export default function Header({ city }: { city: string }) {
   return (
     <header className="sticky top-0 z-20 border-b border-line bg-white/95 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-3xl items-center gap-3 px-4">
@@ -34,33 +31,9 @@ export default function Header({ city, user }: Props) {
           >
             发布信息
           </Link>
-          {user ? (
-            <Link href="/me" className="hidden items-center gap-2 md:flex">
-              <Avatar name={user.name} url={user.avatar_url} />
-            </Link>
-          ) : (
-            <Link href="/login" className="hidden text-sm text-ink-soft md:block">
-              登录
-            </Link>
-          )}
+          <HeaderUser />
         </div>
       </div>
     </header>
-  )
-}
-
-export function Avatar({ name, url, size = 32 }: { name: string; url: string | null; size?: number }) {
-  if (url) {
-    // eslint-disable-next-line @next/next/no-img-element
-    return <img src={url} alt="" width={size} height={size} className="rounded-full object-cover" style={{ width: size, height: size }} />
-  }
-  return (
-    <span
-      className="inline-flex items-center justify-center rounded-full bg-seal-soft font-medium text-seal"
-      style={{ width: size, height: size, fontSize: size * 0.45 }}
-      aria-hidden
-    >
-      {name.slice(0, 1)}
-    </span>
   )
 }

@@ -8,13 +8,13 @@ import { createClient } from '@/lib/supabase/client'
 import { deleteImages } from '@/lib/images'
 import PinControl from '@/components/PinControl'
 import type { PostImage } from '@/lib/types'
+import { useViewer } from '@/lib/useViewer'
 
 type Props = {
   id: number
   status: 'active' | 'done'
   bumpedAt: string
-  isOwner: boolean
-  isAdmin: boolean
+  authorId: string
   isHidden: boolean
   pinnedUntil: string | null
   isApproved: boolean
@@ -22,10 +22,13 @@ type Props = {
 }
 
 // 作者和管理员看到的操作栏
-export default function OwnerBar({ id, status, bumpedAt, isOwner, isAdmin, isHidden, pinnedUntil, isApproved, showStatus }: Props) {
+export default function OwnerBar({ id, status, bumpedAt, authorId, isHidden, pinnedUntil, isApproved, showStatus }: Props) {
   const router = useRouter()
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState('')
+  const viewer = useViewer()
+  const isOwner = !!viewer && viewer.id === authorId
+  const isAdmin = !!viewer?.is_admin
 
   const canBump = Date.now() - new Date(bumpedAt).getTime() > 24 * 3600 * 1000
 
@@ -60,6 +63,9 @@ export default function OwnerBar({ id, status, bumpedAt, isOwner, isAdmin, isHid
   }
 
   const btn = 'rounded-full border px-3 py-1.5 text-sm disabled:opacity-50'
+
+  // 只有作者和管理员看得到（在浏览器里判断，帖子页本身可以走缓存）
+  if (!isOwner && !isAdmin) return null
 
   return (
     <div className="mt-4 rounded-lg border border-line bg-paper p-3">

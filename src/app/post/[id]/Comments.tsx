@@ -6,11 +6,13 @@ import { usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { timeAgo } from '@/lib/format'
 import type { Comment } from '@/lib/types'
-import { Avatar } from '@/components/Header'
+import Avatar from '@/components/Avatar'
+import { useViewer } from '@/lib/useViewer'
 
-type Props = { postId: number; currentUserId: string | null; isAdmin: boolean }
-
-export default function Comments({ postId, currentUserId, isAdmin }: Props) {
+export default function Comments({ postId }: { postId: number }) {
+  const viewer = useViewer()
+  const currentUserId = viewer?.id ?? null
+  const isAdmin = !!viewer?.is_admin
   const path = usePathname()
   const [list, setList] = useState<Comment[] | null>(null)
   const [text, setText] = useState('')
@@ -86,7 +88,7 @@ export default function Comments({ postId, currentUserId, isAdmin }: Props) {
         </ul>
       )}
 
-      {currentUserId ? (
+      {viewer === undefined ? null : currentUserId ? (
         <form onSubmit={send} className="mt-4 flex items-end gap-2">
           <textarea
             value={text}

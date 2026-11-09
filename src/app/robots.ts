@@ -37,7 +37,7 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: '*',
         allow: '/',
         // 后台、个人页、搜索结果、登录注册页没必要被抓取
-        disallow: ['/admin', '/me', '/search', '/api/', '/login', '/register', '/reset-password', '/auth/', '/post/new', '/promo/'],
+        disallow: ['/admin', '/me', '/search', '/api/', '/login', '/register', '/reset-password', '/auth/', '/post/new', '/post/*/private', '/promo/'],
       },
     ],
   }

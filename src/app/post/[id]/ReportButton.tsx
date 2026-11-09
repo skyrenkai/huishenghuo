@@ -3,10 +3,14 @@
 import { useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { useViewer } from '@/lib/useViewer'
 
 const REASONS = ['疑似诈骗', '虚假信息', '广告刷屏', '违法或色情内容', '已失效', '其他']
 
-export default function ReportButton({ postId, loggedIn }: { postId: number; loggedIn: boolean }) {
+// 发布者本人不显示举报按钮
+export default function ReportButton({ postId, authorId }: { postId: number; authorId: string }) {
+  const viewer = useViewer()
+  const loggedIn = !!viewer
   const router = useRouter()
   const path = usePathname()
   const [open, setOpen] = useState(false)
@@ -26,6 +30,8 @@ export default function ReportButton({ postId, loggedIn }: { postId: number; log
     // 重复举报（唯一约束）也当作成功
     setState(!error || error.code === '23505' ? 'done' : 'error')
   }
+
+  if (viewer && viewer.id === authorId) return null
 
   return (
     <>

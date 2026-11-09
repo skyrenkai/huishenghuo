@@ -7,7 +7,7 @@ import { getCurrentUser } from '@/lib/session'
 import { timeAgo } from '@/lib/format'
 import { displayEmail } from '@/lib/wechat'
 import { POST_LIST_FIELDS, type PostListItem } from '@/lib/types'
-import { Avatar } from '@/components/Header'
+import Avatar from '@/components/Avatar'
 import PostRow from '@/components/PostRow'
 import { AdminButton } from '../../AdminButton'
 
