@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import Link from '@/components/Link'
 import PostRow from './PostRow'
 import type { PostListItem } from '@/lib/types'
 

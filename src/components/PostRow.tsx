@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import Link from '@/components/Link'
 import { getCategory, cityName, SINGLE_CITY } from '@/lib/categories'
 import { formatPrice, timeAgo } from '@/lib/format'
 import { isPinned } from '@/lib/pin'

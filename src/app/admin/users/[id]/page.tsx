@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import Link from '@/components/Link'
 import BulkList from '../../BulkList'
 import { notFound, redirect } from 'next/navigation'
 import type { Metadata } from 'next'

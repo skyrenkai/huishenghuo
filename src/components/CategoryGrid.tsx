@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import Link from '@/components/Link'
 import { CATEGORIES } from '@/lib/categories'
 
 // 首页分类入口：每个分类一个汉字图标

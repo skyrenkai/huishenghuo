@@ -3,6 +3,12 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 // 每次请求时刷新登录状态，避免用户莫名其妙被登出
 export async function middleware(request: NextRequest) {
+  // 没登录的访客（包括各种爬虫，占了绝大多数）没有登录 cookie，什么都不用做，直接放行。
+  // 这样能省下大量 Vercel 服务器运算额度。
+  if (!request.cookies.getAll().some((c) => c.name.startsWith('sb-'))) {
+    return NextResponse.next()
+  }
+
   let response = NextResponse.next({ request })
 
   const supabase = createServerClient(

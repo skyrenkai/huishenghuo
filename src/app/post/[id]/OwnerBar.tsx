@@ -1,7 +1,7 @@
 'use client'
 
 import { refreshPublicCache } from '@/app/actions/revalidate'
-import Link from 'next/link'
+import Link from '@/components/Link'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'

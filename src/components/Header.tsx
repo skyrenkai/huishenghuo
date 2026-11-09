@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import Link from '@/components/Link'
 import CityPicker from './CityPicker'
 import { SINGLE_CITY } from '@/lib/categories'
 
