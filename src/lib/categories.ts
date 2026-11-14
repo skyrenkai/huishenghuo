@@ -189,3 +189,15 @@ export function cityName(code?: string | null): string {
   const c = CITIES.find((x) => x.code === code)
   return c ? c.name.split(' ')[0] : ''
 }
+
+// 板块列表页的网址。筛选条件放在路径里（不用 ?sub= 这种参数），这样每种组合都能整页缓存。
+// /c/house                 全部 · 最新 · 第 1 页
+// /c/house/出租             出租 · 最新 · 第 1 页
+// /c/house/all/hot/2       全部 · 最热 · 第 2 页
+export function catHref(cat: string, o: { sub?: string; sort?: 'new' | 'hot'; page?: number } = {}) {
+  const sub = o.sub ? encodeURIComponent(o.sub) : ''
+  const sort = o.sort === 'hot' ? 'hot' : 'new'
+  const page = o.page && o.page > 1 ? o.page : 1
+  if (sort === 'new' && page === 1) return sub ? `/c/${cat}/${sub}` : `/c/${cat}`
+  return `/c/${cat}/${sub || 'all'}/${sort}/${page}`
+}

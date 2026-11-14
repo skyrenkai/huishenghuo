@@ -1,5 +1,5 @@
 import Link from '@/components/Link'
-import { getCategory } from '@/lib/categories'
+import { getCategory, catHref } from '@/lib/categories'
 import { formatPrice, timeAgo } from '@/lib/format'
 import type { PostListItem } from '@/lib/types'
 import { isPinned } from '@/lib/pin'
@@ -43,7 +43,7 @@ function Card({ code, children, chips = true }: { code: string; children: React.
       {chips && (
         <div className="flex flex-wrap gap-x-5 gap-y-2 px-4 pt-3 text-[15px]">
           {cat.subs.map((s) => (
-            <Link key={s} href={`/c/${code}?sub=${encodeURIComponent(s)}`} className="text-ink-soft hover:text-seal">
+            <Link key={s} href={catHref(code, { sub: s })} className="text-ink-soft hover:text-seal">
               {s}
             </Link>
           ))}

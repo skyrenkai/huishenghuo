@@ -1,6 +1,6 @@
 import Link from '@/components/Link'
 import { Suspense } from 'react'
-import { getCategory, cityName } from '@/lib/categories'
+import { getCategory, cityName, catHref } from '@/lib/categories'
 import { displayViews, formatDateTime, formatPrice, timeAgo } from '@/lib/format'
 import type { Post, PostContact } from '@/lib/types'
 import Avatar from '@/components/Avatar'
@@ -60,7 +60,7 @@ export default function PostView({ bundle }: { bundle: Bundle }) {
           <Link href={`/c/${post.category}`} className="rounded px-1.5 py-0.5 text-white" style={{ background: cat?.color ?? '#8a93a0' }}>
             {cat?.name ?? '其他'}
           </Link>
-          <Link href={`/c/${post.category}?sub=${encodeURIComponent(post.subcategory)}`} className="rounded bg-paper px-1.5 py-0.5 text-ink-soft">
+          <Link href={catHref(post.category, { sub: post.subcategory })} className="rounded bg-paper px-1.5 py-0.5 text-ink-soft">
             {post.subcategory}
           </Link>
           <span className="text-mute">{cityName(post.city)}</span>
